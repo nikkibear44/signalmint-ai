@@ -45,6 +45,15 @@ Return a structured report in this format:
 ## Overview
 (2–3 concise sentences)
 
+## Live Market Data
+Include the following exactly as provided:
+- Price
+- 24h Change
+- Market Cap
+- 24h Volume
+
+Briefly explain what these numbers indicate.
+
 ## Main Narratives
 - Bullet 1
 - Bullet 2
@@ -70,6 +79,7 @@ Explain briefly why.
 
 Do not provide financial advice.
 Always present balanced arguments.
+Always include the Live Market Data section when market information is available.
 Keep the report concise and professional.
 """
 

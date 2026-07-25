@@ -1,5 +1,6 @@
-fastapi
-uvicorn
-openai
-python-dotenv
-requests
+fastapi==0.115.12
+starlette==0.46.2
+uvicorn==0.34.2
+openai==1.99.1
+python-dotenv==1.1.1
+requests==2.32.4
