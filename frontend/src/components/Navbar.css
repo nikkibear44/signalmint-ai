@@ -1,0 +1,48 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 42px;
+  border-bottom: 1px solid #1b1b1b;
+  background: #050505;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.logo-image {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+.brand h2 {
+  margin: 0;
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.brand span {
+  display: block;
+  margin-top: 2px;
+  color: #8b8b8b;
+  font-size: 14px;
+}
+
+.navbar-right {
+  display: flex;
+  gap: 28px;
+}
+
+.navbar-right a {
+  color: #9b9b9b;
+  transition: 0.2s;
+}
+
+.navbar-right a:hover {
+  color: white;
+}

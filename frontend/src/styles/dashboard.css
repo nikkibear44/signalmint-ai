@@ -1,0 +1,195 @@
+/* ========================================
+   SignalMint Design System
+======================================== */
+
+:root {
+  --bg: #09090b;
+  --surface: #111827;
+  --surface-2: #1f2937;
+  --border: #2b3444;
+
+  --primary: #ff8a00;
+  --primary-hover: #ff9f29;
+
+  --green: #22c55e;
+  --red: #ef4444;
+  --yellow: #facc15;
+
+  --text: #ffffff;
+  --text-muted: #9ca3af;
+
+  --radius: 18px;
+}
+
+.dashboard-section {
+  margin-top: 36px;
+}
+
+.section-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: all .25s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+  gap: 18px;
+}
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+  transition: .25s;
+}
+
+.metric-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-4px);
+}
+
+.metric-label {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.metric-value {
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.search-box {
+  display: flex;
+  gap: 14px;
+}
+
+.search-box input {
+  flex: 1;
+  background: var(--surface);
+  color: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 16px;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.primary-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 26px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: .2s;
+}
+
+.primary-btn:hover {
+  background: var(--primary-hover);
+}
+
+.token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(230px,1fr));
+  gap: 20px;
+}
+
+.token-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.token-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-5px);
+}
+
+.score-card {
+  background: linear-gradient(135deg,#111827,#182235);
+  border: 1px solid var(--primary);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+}
+
+.score-number {
+  font-size: 72px;
+  font-weight: 800;
+}
+
+.buy {
+  color: var(--green);
+}
+
+.sell {
+  color: var(--red);
+}
+
+.hold {
+  color: var(--yellow);
+}
+
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+}
+
+.report-card h1,
+.report-card h2,
+.report-card h3 {
+  color: var(--primary);
+  margin-top: 30px;
+  margin-bottom: 14px;
+}
+
+.report-card p {
+  line-height: 1.8;
+  color: #e5e7eb;
+}
+
+.report-card li {
+  margin: 8px 0;
+}
+
+@media (max-width:768px){
+
+.search-box{
+    flex-direction:column;
+}
+
+.score-number{
+    font-size:52px;
+}
+
+.section-title{
+    font-size:22px;
+}
+
+}

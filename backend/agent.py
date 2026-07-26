@@ -1,96 +1,338 @@
 import os
+import re
+
 from openai import OpenAI
 from dotenv import load_dotenv
 from market import get_market_data
+from prompts import (
+    TOKEN_ANALYSIS_PROMPT,
+    DUE_DILIGENCE_PROMPT,
+)
+from data_engine import collect_project_data
 
 load_dotenv()
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-def crypto_analysis(query):
-
-    market = get_market_data(query.strip())
-
-    market_info = ""
-
-    if market:
-        market_info = f"""
-Current Market Data
-
-Price: ${market['price']}
-24h Change: {market['change']:.2f}%
-Market Cap: ${market['market_cap']:,.0f}
-24h Volume: ${market['volume']:,.0f}
-"""
-
-    prompt = f"""
-You are Crypto Intelligence Analyst, an expert Web3 research assistant.
-
-Analyze:
-
-{query}
-
-{market_info}
-
-If the user provides only a token symbol (example: SOL, ETH, BTC, ANSEM),
-identify the corresponding project automatically.
-
-Return a structured report in this format:
-
-# Crypto Intelligence Report
-
-## Overview
-(2–3 concise sentences)
-
-## Live Market Data
-Include the following exactly as provided:
-- Price
-- 24h Change
-- Market Cap
-- 24h Volume
-
-Briefly explain what these numbers indicate.
-
-## Main Narratives
-- Bullet 1
-- Bullet 2
-- Bullet 3
-
-## Bull Case
-- Bullet 1
-- Bullet 2
-- Bullet 3
-
-## Bear Case
-- Bullet 1
-- Bullet 2
-- Bullet 3
-
-## Risk Level
-Choose one: Low / Medium / High
-
-Explain briefly why.
-
-## Final Summary
-(2–3 concise sentences)
-
-Do not provide financial advice.
-Always present balanced arguments.
-Always include the Live Market Data section when market information is available.
-Keep the report concise and professional.
-"""
-
+def ask_ai(prompt):
     response = client.chat.completions.create(
         model="gpt-4.1-mini",
         messages=[
             {
                 "role": "user",
-                "content": prompt
+                "content": prompt,
             }
-        ]
+        ],
     )
 
     return response.choices[0].message.content
+
+def extract_section(report, section_name):
+    headings = [
+        "Executive Summary",
+        "Market Snapshot",
+        "Project Overview",
+        "Investment Thesis",
+        "Bull Case",
+        "Bear Case",
+        "Key Catalysts",
+        "Competitive Landscape",
+        "Risk Assessment",
+        "AI Confidence",
+        "Final Verdict",
+    ]
+
+    try:
+        current = headings.index(section_name)
+    except ValueError:
+        return ""
+
+    next_heading = None
+
+    if current < len(headings) - 1:
+        next_heading = headings[current + 1]
+
+    if next_heading:
+        pattern = (
+            rf"{re.escape(section_name)}\s*"
+            rf"([\s\S]*?)"
+            rf"(?={re.escape(next_heading)})"
+        )
+    else:
+        pattern = (
+            rf"{re.escape(section_name)}\s*"
+            rf"([\s\S]*)"
+        )
+
+    match = re.search(pattern, report, re.IGNORECASE)
+
+    if not match:
+        return ""
+
+    content = match.group(1).strip()
+
+    # Remove markdown separators anywhere at the end
+    content = re.sub(r"\n+\s*---+\s*", "\n", content)
+    content = re.sub(r"\n+\s*##+\s*", "\n", content)
+    content = re.sub(r"\n+\s*#+\s*", "\n", content)
+
+    # Remove trailing blank lines
+    content = content.strip()
+
+    return content
+
+def crypto_analysis(query):
+
+    market = get_market_data(query.strip())
+
+    market_info = "No live market data available."
+
+    if market:
+
+        categories = ", ".join(market.get("categories", []))
+        if not categories:
+            categories = "N/A"
+
+        market_info = f"""
+Name: {market.get("name", "N/A")}
+Symbol: {market.get("symbol", "N/A")}
+Categories: {categories}
+
+Description:
+{market.get("description", "N/A")}
+
+Homepage:
+{market.get("homepage", "N/A")}
+
+Current Price:
+{market.get("price", "N/A")} USD
+
+24h Change:
+{market.get("change_24h", "N/A")}%
+
+Market Cap:
+{market.get("market_cap", "N/A")}
+
+24h Volume:
+{market.get("volume", "N/A")}
+
+CoinGecko Rank:
+{market.get("coingecko_rank", "N/A")}
+
+Genesis Date:
+{market.get("genesis_date", "N/A")}
+"""
+
+    prompt = f"""
+{TOKEN_ANALYSIS_PROMPT}
+
+Project:
+
+{query}
+
+Verified CoinGecko Information:
+
+{market_info}
+
+Use the verified information above as the factual source whenever applicable.
+If the verified information conflicts with your prior knowledge, prefer the verified information.
+Do not invent blockchain, partnerships, tokenomics, investors, or roadmap items.
+"""
+
+    print("=" * 80)
+    print("MARKET INFO SENT TO GPT:")
+    print(market_info)
+    print("=" * 80)
+
+    report = ask_ai(prompt)
+
+    print("\n================ GPT REPORT ================\n")
+    print(report)
+    print("\n===========================================\n")
+
+    bull_case = extract_section(report, "Bull Case")
+    bear_case = extract_section(report, "Bear Case")
+    catalysts = extract_section(report, "Key Catalysts")
+    risk_assessment = extract_section(report, "Risk Assessment")
+    ai_confidence = extract_section(report, "AI Confidence")
+    summary = extract_section(report, "Executive Summary")
+
+    print("SUMMARY:")
+    print(repr(summary))
+
+    print("CATALYSTS:")
+    print(repr(catalysts))
+
+    print("RISKS:")
+    print(repr(risk_assessment))    
+
+    return {
+        "market": market,
+        "report": report,
+        "insights": {
+    "summary": summary,
+            "bull_case": bull_case,
+            "bear_case": bear_case,
+            "catalysts": catalysts,
+            "risk_assessment": risk_assessment,
+            "ai_confidence": ai_confidence,
+        },
+    }
+
+def compare_tokens(token1, token2):
+
+    market1 = get_market_data(token1.strip())
+    market2 = get_market_data(token2.strip())
+
+
+    print("\n" + "=" * 80)
+    print("COMPARE DEBUG")
+    print("=" * 80)
+    print("TOKEN 1:", repr(token1))
+    print("MARKET 1:", market1)
+    print("-" * 80)
+    print("TOKEN 2:", repr(token2))
+    print("MARKET 2:", market2)
+    print("=" * 80 + "\n")
+
+    prompt = f"""
+Compare these crypto assets.
+
+Token 1:
+{token1}
+
+Market Data:
+{market1}
+
+Token 2:
+{token2}
+
+Market Data:
+{market2}
+
+Return Markdown with:
+
+# Token Comparison
+
+## Overview
+
+## Market Comparison
+
+## Strengths
+
+## Weaknesses
+
+## AI Verdict
+
+Stay neutral.
+"""
+
+    return ask_ai(prompt)
+
+
+def narrative_detector(narrative):
+
+    prompt = f"""
+Analyze this crypto narrative.
+
+Narrative:
+{narrative}
+
+Return Markdown with:
+
+# Narrative Analysis
+
+## Overview
+
+## Current Momentum
+
+## Leading Projects
+
+## Bull Case
+
+## Bear Case
+
+## Key Risks
+
+## AI Outlook
+
+Only mention real projects.
+Do not invent project names.
+"""
+
+    return ask_ai(prompt)
+
+
+def portfolio_review(portfolio):
+
+    prompt = f"""
+You are a professional crypto portfolio analyst.
+
+Portfolio:
+
+{portfolio}
+
+Return Markdown.
+
+# Portfolio Review
+
+## Portfolio Summary
+
+## Allocation Analysis
+
+## Diversification
+
+## Strengths
+
+## Weaknesses
+
+## Risk Score
+
+## Suggestions
+
+## AI Verdict
+
+Do not provide financial advice.
+"""
+
+    return ask_ai(prompt)
+
+def due_diligence(project):
+    import json
+
+    project_data = collect_project_data(project)
+
+    live_data = json.dumps(project_data, indent=2)
+
+    prompt = f"""
+{DUE_DILIGENCE_PROMPT}
+
+The following JSON is the ONLY verified evidence.
+
+{live_data}
+
+Rules:
+
+1. Treat this JSON as the only factual source.
+
+2. Never infer missing information.
+
+3. If a field is unavailable, write exactly:
+
+"Not available from provided live data."
+
+4. Categories are classifications only.
+They do NOT prove architecture, technology, security, or implementation.
+
+5. GitHub repository existence does NOT imply active development.
+
+6. Current TVL does NOT imply TVL growth.
+
+7. Never discuss historical TVL unless historical data exists.
+
+Project:
+{project}
+"""
+
+    return ask_ai(prompt)

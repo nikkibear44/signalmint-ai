@@ -1,0 +1,18 @@
+.metric-card {
+  background: #0f1115;
+  border: 1px solid #262626;
+  border-radius: 18px;
+  padding: 24px;
+  text-align: center;
+}
+
+.metric-card span {
+  color: #8d8d8d;
+  font-size: 14px;
+}
+
+.metric-card h2 {
+  margin-top: 12px;
+  color: white;
+  font-size: 28px;
+}
