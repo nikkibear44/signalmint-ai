@@ -1,5 +1,6 @@
 import os
 import re
+import json
 
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -336,3 +337,67 @@ Project:
 """
 
     return ask_ai(prompt)
+
+def generate_trade_plan(coin):
+    prompt = f"""
+You are an elite crypto analyst.
+
+Create an actionable trade plan using ONLY the information below.
+
+Token:
+{coin["name"]} ({coin["symbol"]})
+
+Current Price:
+{coin["price"]}
+
+24h Change:
+{coin["change_24h"]}%
+
+Market Cap:
+{coin["market_cap"]}
+
+Catalyst:
+{coin["catalyst"]}
+
+Reasons:
+{chr(10).join("- " + r for r in coin["reasons"])}
+
+Return ONLY valid JSON.
+
+Use this exact schema:
+
+{{
+  "overall_bias": "",
+  "suggested_action": "",
+  "entry_zone": "",
+  "take_profit": "",
+  "stop_loss": "",
+  "holding_period": "",
+  "risk_reward": "",
+  "summary": ""
+}}
+
+Rules:
+- Return JSON only.
+- No Markdown.
+- No code fences.
+- No extra text.
+- Keep every value concise.
+- Base the response only on the supplied token information.
+"""
+
+    response = ask_ai(prompt)
+
+    try:
+        return json.loads(response)
+    except Exception:
+        return {
+        "overall_bias": "Unknown",
+        "suggested_action": "Unable to generate plan.",
+        "entry_zone": "-",
+        "take_profit": "-",
+        "stop_loss": "-",
+        "holding_period": "-",
+        "risk_reward": "-",
+        "summary": response,
+    }

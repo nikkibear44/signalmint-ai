@@ -56,15 +56,17 @@ def get_trending_tokens():
 
     for market in market_data:
         tokens.append(
-            {
-                "name": market["name"],
-                "symbol": market["symbol"].upper(),
-                "rank": market["market_cap_rank"],
-                "price": market["current_price"],
-                "change_24h": market["price_change_percentage_24h"],
-                "market_cap": market["market_cap"],
-            }
-        )
+    {
+        "name": market["name"],
+        "symbol": market["symbol"].upper(),
+        "rank": market["market_cap_rank"],
+        "price": market["current_price"],
+        "change_24h": market["price_change_percentage_24h"],
+        "market_cap": market["market_cap"],
+        "categories": market.get("categories", []),
+        "coingecko_rank": market.get("market_cap_rank"),
+    }
+)
 
     CACHE["data"] = tokens
     CACHE["timestamp"] = time.time()

@@ -6,6 +6,9 @@ from pydantic import BaseModel
 
 from market_snapshot import get_global_market
 from trending import get_trending_tokens
+from alpha_scanner import scan_alpha
+from smart_money import get_smart_money
+from wallet_portfolio import get_wallet_portfolio
 
 from agent import (
     crypto_analysis,
@@ -13,6 +16,7 @@ from agent import (
     narrative_detector,
     portfolio_review,
     due_diligence,
+    generate_trade_plan,
 )
 
 from router import detect_intent
@@ -25,10 +29,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,6 +63,9 @@ class DueDiligenceRequest(BaseModel):
 
 class QueryRequest(BaseModel):
     query: str
+
+class TradePlanRequest(BaseModel):
+    coin: dict
 
 
 # ===========================
@@ -274,12 +278,39 @@ def market_snapshot():
         "success": True,
         "data": data
     }
+    print("🚀 Alpha Scanner route registered")
 
+@app.get("/alpha-scanner")
+async def alpha_scanner():
+    """
+    Returns the top AI-ranked crypto opportunities.
+    """
+
+    data = scan_alpha()
+
+    response = response_template("/alpha-scanner")
+    response["results"] = data
+
+    return response
 
 # ===========================
 # Trending Tokens
 # ===========================
 
+# ===========================
+# AI Trade Plan
+# ===========================
+
+@app.post("/trade-plan")
+def trade_plan(data: TradePlanRequest):
+
+    report = generate_trade_plan(data.coin)
+
+    response = response_template("trade-plan")
+    response["report"] = report
+
+    return response
+    
 @app.get("/trending")
 def trending():
 
@@ -287,3 +318,40 @@ def trending():
         "success": True,
         "data": get_trending_tokens(),
     }
+
+    # ===========================
+# Smart Money
+# ===========================
+
+@app.get("/smart-money")
+def smart_money():
+
+    return {
+        "success": True,
+        "results": get_smart_money(),
+    }
+
+    # ===========================
+# Wallet Portfolio
+# ===========================
+ 
+@app.get("/wallet-portfolio/{address}")
+def wallet_portfolio(address: str):
+ 
+    if not address.strip():
+        return {"success": False, "message": "Wallet address is required."}
+ 
+    try:
+        data = get_wallet_portfolio(address)
+ 
+        return {
+            "success": True,
+            "data": data,
+        }
+    except Exception as e:
+        print(f"[Wallet Portfolio Error] {e}")
+ 
+        return {
+            "success": False,
+            "message": "Unable to fetch wallet portfolio.",
+        }

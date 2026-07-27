@@ -14,36 +14,20 @@ function Services() {
       title: "Alpha Scanner",
       description:
         "Scan today's market and generate AI-powered market intelligence.",
-      path: "/dashboard",
+      path: "/dashboard/alpha-scanner",
     },
     {
-      icon: "🔍",
-      title: "Token Intelligence",
+      icon: "🐋",
+      title: "Smart Wallet Tracker",
       description:
-        "Professional AI research with live market data, narratives, and risks.",
-      path: "/dashboard",
-    },
-    {
-      icon: "⚔️",
-      title: "Asset Battle",
-      description:
-        "Compare two crypto assets side by side with AI insights.",
-      path: "/dashboard",
-    },
-    {
-      icon: "💼",
-      title: "Portfolio Doctor",
-      description:
-        "Analyze allocation, diversification, and portfolio risk instantly.",
-      path: "/dashboard",
+        "Track real-time buys and sells from top smart wallets on Solana.",
+      path: "/dashboard/smart-money",
     },
   ];
 
   return (
     <section className="services" id="services">
-      <p className="section-tag">
-        OUR SERVICES
-      </p>
+      <p className="section-tag">OUR SERVICES</p>
 
       <h2>
         AI services built for
@@ -58,17 +42,15 @@ function Services() {
             className="service-card"
             key={service.title}
           >
-            <div className="service-icon">
-              {service.icon}
+            <div className="service-icon-badge">
+              <span className="service-icon">{service.icon}</span>
             </div>
 
             <h3>{service.title}</h3>
 
             <p>{service.description}</p>
 
-            <button>
-              Launch →
-            </button>
+            <button>Launch →</button>
           </Link>
         ))}
       </div>

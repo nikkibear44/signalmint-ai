@@ -3,9 +3,12 @@ import { Link } from "react-router-dom";
 function Hero() {
   return (
     <section className="hero">
+      <div className="hero-glow" />
+
       <div className="hero-content">
 
         <p className="hero-badge">
+          <span className="hero-badge-dot" />
           AI-Powered Crypto Intelligence
         </p>
 
@@ -22,13 +25,18 @@ function Hero() {
         </p>
 
         <div className="hero-buttons">
-          <Link to="/dashboard" className="primary-btn">
-  Launch App
-</Link>
+          <Link to="/dashboard" className="hero-cta-btn">
+            Launch App
+          </Link>
 
-          <button className="secondary-btn">
+          <a
+            href="https://github.com/nikkibear44/signalmint-ai"
+            target="_blank"
+            rel="noreferrer"
+            className="secondary-btn"
+          >
             View GitHub
-          </button>
+          </a>
         </div>
 
       </div>
