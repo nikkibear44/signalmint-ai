@@ -1,4 +1,4 @@
-const API_BASE = "https://signalmint-ai.onrender.com";
+const API_BASE = "http://127.0.0.1:8000";
 
 export async function analyzeToken(query) {
   const response = await fetch(`${API_BASE}/analyze`, {
@@ -49,7 +49,7 @@ export async function getAlphaScanner() {
 }
 
 export async function getTradePlan(coin) {
-  const response = await fetch("http://127.0.0.1:8000/trade-plan", {
+  const response = await fetch(`${API_BASE}/trade-plan`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
