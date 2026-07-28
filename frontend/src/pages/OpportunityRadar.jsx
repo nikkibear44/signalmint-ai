@@ -34,7 +34,7 @@ Take Profit: ${cleanPlanValue(plan.take_profit)}
 Stop Loss: ${cleanPlanValue(plan.stop_loss)}
 Amount: ~$${amountUsd} USDT0
 
-Please use the OKX Agent Payments Protocol / OKX DEX to execute this swap on my behalf, using my own connected wallet. Confirm the trade details with me before signing anything.`;
+Please check whether ${tokenSymbol} and its chain are supported by OKX DEX before proceeding. If supported, use the OKX Agent Payments Protocol / OKX DEX to execute this swap on my behalf, using my own connected wallet. Confirm the trade details with me before signing anything. If ${tokenSymbol} or its chain is not supported by OKX DEX, let me know instead of attempting the trade.`;
 }
 
 function biasClass(bias) {
@@ -878,7 +878,9 @@ function OpportunityRadar() {
                         SignalMint AI does not hold funds or execute trades
                         itself. This copies a ready-to-send instruction for
                         your own agent to execute using your own connected
-                        wallet.
+                        wallet. Not every token or chain is guaranteed to be
+                        supported by OKX DEX — your agent will confirm this
+                        before proceeding.
                       </p>
                     </div>
                   )}
