@@ -38,7 +38,13 @@ Signal: BUY | HOLD | SELL
 Confidence: <0-100>
 
 Reason:
-Write one concise sentence explaining the score.
+Write one concise sentence identifying the SINGLE most important factor driving this score.
+
+Be specific and decisive - name the actual driver (e.g. "strong 24h volume relative to market cap signals active accumulation" or "flat price action and low liquidity suggest weak conviction").
+
+Do NOT write vague hedges like "limits actionable insights," "requires further research," or "warrants cautious consideration." Those add no information.
+
+If live market data is unavailable, base the reason on the project's known fundamentals, technology, or competitive position instead of commenting on the missing data itself.
 
 ---
 
