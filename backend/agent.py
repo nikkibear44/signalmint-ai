@@ -29,6 +29,7 @@ def ask_ai(prompt):
 
     return response.choices[0].message.content
 
+
 def extract_section(report, section_name):
     headings = [
         "Executive Summary",
@@ -82,6 +83,28 @@ def extract_section(report, section_name):
     content = content.strip()
 
     return content
+
+
+def remove_section(report, section_name):
+    """
+    Removes a whole section (its heading + body) from the report text.
+    Used to strip sections that are already shown separately in the
+    compact Executive Summary card, so the full report doesn't repeat them.
+    """
+
+    pattern = (
+        rf"#{{1,3}}\s*{re.escape(section_name)}\s*"
+        rf"[\s\S]*?"
+        rf"(?=\n#{{1,3}}\s|\Z)"
+    )
+
+    cleaned = re.sub(pattern, "", report, count=1, flags=re.IGNORECASE)
+
+    # Clean up any resulting stray horizontal rules or extra blank lines
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned)
+
+    return cleaned.strip()
+
 
 def crypto_analysis(query):
 
@@ -166,13 +189,21 @@ Do not invent blockchain, partnerships, tokenomics, investors, or roadmap items.
     print(repr(catalysts))
 
     print("RISKS:")
-    print(repr(risk_assessment))    
+    print(repr(risk_assessment))
+
+    # Strip sections from the full report that are already shown
+    # separately in the compact Executive Summary card, so the two
+    # don't repeat the same content.
+    report_cleaned = report
+    report_cleaned = remove_section(report_cleaned, "Executive Summary")
+    report_cleaned = remove_section(report_cleaned, "Key Catalysts")
+    report_cleaned = remove_section(report_cleaned, "Risk Assessment")
 
     return {
         "market": market,
-        "report": report,
+        "report": report_cleaned,
         "insights": {
-    "summary": summary,
+            "summary": summary,
             "bull_case": bull_case,
             "bear_case": bear_case,
             "catalysts": catalysts,
@@ -181,11 +212,11 @@ Do not invent blockchain, partnerships, tokenomics, investors, or roadmap items.
         },
     }
 
+
 def compare_tokens(token1, token2):
 
     market1 = get_market_data(token1.strip())
     market2 = get_market_data(token2.strip())
-
 
     print("\n" + "=" * 80)
     print("COMPARE DEBUG")
@@ -299,6 +330,7 @@ Do not provide financial advice.
 
     return ask_ai(prompt)
 
+
 def due_diligence(project):
     import json
 
@@ -337,6 +369,7 @@ Project:
 """
 
     return ask_ai(prompt)
+
 
 def generate_trade_plan(coin):
     prompt = f"""
@@ -392,12 +425,12 @@ Rules:
         return json.loads(response)
     except Exception:
         return {
-        "overall_bias": "Unknown",
-        "suggested_action": "Unable to generate plan.",
-        "entry_zone": "-",
-        "take_profit": "-",
-        "stop_loss": "-",
-        "holding_period": "-",
-        "risk_reward": "-",
-        "summary": response,
-    }
+            "overall_bias": "Unknown",
+            "suggested_action": "Unable to generate plan.",
+            "entry_zone": "-",
+            "take_profit": "-",
+            "stop_loss": "-",
+            "holding_period": "-",
+            "risk_reward": "-",
+            "summary": response,
+        }
