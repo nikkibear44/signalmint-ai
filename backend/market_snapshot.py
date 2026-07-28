@@ -1,12 +1,18 @@
+import os
 import requests
 import time
 
 BASE_URL = "https://api.coingecko.com/api/v3"
 
+COINGECKO_API_KEY = os.getenv("COINGECKO_API_KEY")
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; SignalMintAI/1.0; +https://signalmint-ai.vercel.app)",
     "Accept": "application/json",
 }
+
+if COINGECKO_API_KEY:
+    HEADERS["x-cg-demo-api-key"] = COINGECKO_API_KEY
 
 CACHE = {
     "data": None,
