@@ -33,7 +33,7 @@ const tools = [
     icon: Search,
     title: "Token Intelligence",
     description: "Generate institutional-grade research for any token.",
-    path: null,
+    path: "/dashboard/token-intelligence",
   },
   {
     icon: Swords,

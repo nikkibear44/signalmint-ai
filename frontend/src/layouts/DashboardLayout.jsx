@@ -19,7 +19,7 @@ const navItems = [
   { label: "Alpha Scanner", icon: BarChart3, path: "/dashboard/alpha-scanner" },
   { label: "Smart Money", icon: Waves, path: "/dashboard/smart-money" },
   { label: "Portfolio Doctor", icon: Briefcase, path: "/dashboard/portfolio-doctor" },
-  { label: "Token Intelligence", icon: Search, path: null },
+  { label: "Token Intelligence", icon: Search, path: "/dashboard/token-intelligence" },
   { label: "Asset Battle", icon: Swords, path: null },
 ];
 
