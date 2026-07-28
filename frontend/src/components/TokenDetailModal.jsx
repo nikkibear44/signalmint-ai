@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
 import { getTradePlan } from "../services/api";
 
+function cleanPlanValue(value) {
+  if (!value) return "N/A";
+
+  const normalized = String(value).trim().toLowerCase();
+
+  if (normalized === "undefined" || normalized === "null" || normalized === "") {
+    return "N/A";
+  }
+
+  return value;
+}
+
 function biasClass(bias) {
   const normalized = (bias || "").toLowerCase();
 
@@ -144,7 +156,7 @@ function TokenDetailModal({ coin, onClose }) {
               ].map(([title, value]) => (
                 <div key={title} className="tdm-plan-cell">
                   <span>{title}</span>
-                  <strong>{value || "N/A"}</strong>
+                  <strong>{cleanPlanValue(value)}</strong>
                 </div>
               ))}
             </div>

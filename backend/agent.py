@@ -426,6 +426,7 @@ Rules:
 - Keep every value concise.
 - Base the response only on the supplied token information.
 - If price, market cap, or 24h change is "N/A", explicitly account for that limited data in your summary rather than inventing numbers.
+- For entry_zone, take_profit, stop_loss, holding_period, and risk_reward: if there is not enough information to determine a value, write exactly the string "N/A" for that field. Never write "undefined", "null", "unknown", or leave a field blank.
 """
 
     response = ask_ai(prompt)
