@@ -1,8 +1,11 @@
 from datetime import datetime, timezone
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+
+import x402_payment
 
 from market_snapshot import get_global_market
 from trending import get_trending_tokens
@@ -210,6 +213,58 @@ def due_diligence_report(data: DueDiligenceRequest):
     )
 
     return response
+
+
+# ===========================
+# Due Diligence (paid, x402)
+# ===========================
+
+def _x402_challenge_response(resource_url: str, status_code: int = 402, error: str = None) -> JSONResponse:
+    payload = x402_payment.build_402_payload(
+        resource_url=resource_url,
+        description="AI-generated crypto project due diligence report",
+    )
+
+    body = dict(payload)
+    if error:
+        body["error"] = error
+
+    response = JSONResponse(status_code=status_code, content=body)
+    response.headers["PAYMENT-REQUIRED"] = x402_payment.encode_header(payload)
+    return response
+
+
+@app.post("/x402/due-diligence")
+def due_diligence_paid(data: DueDiligenceRequest, request: Request):
+
+    if not data.project.strip():
+        return {"error": "Project cannot be empty."}
+
+    resource_url = str(request.url)
+
+    payment_header = request.headers.get("PAYMENT-SIGNATURE") or request.headers.get("X-PAYMENT")
+
+    if not payment_header:
+        return _x402_challenge_response(resource_url)
+
+    try:
+        settlement = x402_payment.verify_and_settle(payment_header)
+    except x402_payment.PaymentVerificationError as e:
+        return _x402_challenge_response(resource_url, error=str(e))
+
+    result = due_diligence(data.project)
+
+    response = response_template("x402/due-diligence")
+    response.update(
+        {
+            "project": data.project,
+            "report": result,
+        }
+    )
+
+    resp = JSONResponse(content=response)
+    resp.headers["PAYMENT-RESPONSE"] = x402_payment.encode_header(settlement)
+    return resp
 
 
 # ===========================
