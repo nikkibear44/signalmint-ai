@@ -775,14 +775,16 @@ function OpportunityRadar() {
                   ].map(([title, value]) => (
                     <div key={title} className="tdm-plan-cell">
                       <span>{title}</span>
-                      <strong>{value}</strong>
+                      <strong>{value || "N/A"}</strong>
                     </div>
                   ))}
                 </div>
 
                 <div className="tdm-summary-card">
                   <div className="tdm-action-label">📝 AI Summary</div>
-                  <div className="tdm-summary-text">{tradePlan.summary}</div>
+                  <div className="tdm-summary-text">
+                    {tradePlan.summary || "No summary available."}
+                  </div>
                 </div>
               </>
             )}
