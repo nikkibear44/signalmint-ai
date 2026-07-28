@@ -1,6 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
-import { getSmartMoney } from "../services/api";
+import { getSmartMoney, getRobinhoodSmartMoney } from "../services/api";
+
+const CHAINS = {
+  solana: {
+    label: "Solana",
+    badgeColor: "#9945FF",
+    badgeLetter: "S",
+    tokenExplorer: (mint) => `https://solscan.io/token/${mint}`,
+    addressExplorer: (address) => `https://solscan.io/account/${address}`,
+  },
+  robinhood: {
+    label: "Robinhood Chain",
+    badgeColor: "#00C805",
+    badgeLetter: "R",
+    tokenExplorer: (mint) => `https://robinhoodchain.blockscout.com/token/${mint}`,
+    addressExplorer: (address) =>
+      `https://robinhoodchain.blockscout.com/address/${address}`,
+  },
+};
 
 function formatUsd(value) {
   const num = Number(value) || 0;
@@ -56,9 +74,12 @@ function buildTopPicks(feed) {
 }
 
 function SmartMoney() {
+  const [selectedChain, setSelectedChain] = useState("solana");
   const [feed, setFeed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const chain = CHAINS[selectedChain];
 
   useEffect(() => {
     async function loadFeed() {
@@ -66,7 +87,11 @@ function SmartMoney() {
       setError("");
 
       try {
-        const data = await getSmartMoney();
+        const data =
+          selectedChain === "solana"
+            ? await getSmartMoney()
+            : await getRobinhoodSmartMoney();
+
         setFeed(data.results || []);
       } catch (err) {
         setError("Unable to load Smart Money feed.");
@@ -76,7 +101,7 @@ function SmartMoney() {
     }
 
     loadFeed();
-  }, []);
+  }, [selectedChain]);
 
   const topPicks = useMemo(() => buildTopPicks(feed), [feed]);
 
@@ -88,6 +113,24 @@ function SmartMoney() {
           Live buy and sell activity from tracked whale wallets, with
           estimated USD value and AI-generated insight per trade.
         </p>
+      </div>
+
+      {/* Chain selector */}
+      <div className="pd-chain-tabs">
+        {Object.entries(CHAINS).map(([key, c]) => (
+          <button
+            key={key}
+            className={`pd-chain-tab ${
+              selectedChain === key ? "pd-chain-tab-active" : ""
+            }`}
+            onClick={() => setSelectedChain(key)}
+          >
+            <span className="pd-chain-dot" style={{ background: c.badgeColor }}>
+              {c.badgeLetter}
+            </span>
+            {c.label}
+          </button>
+        ))}
       </div>
 
       {error && <div className="sm-error">{error}</div>}
@@ -117,7 +160,7 @@ function SmartMoney() {
                   <div className="sm-pick-rank">#{index + 1} PICK</div>
                   <a
                     className="sm-pick-name sm-link"
-                    href={`https://solscan.io/token/${pick.mint}`}
+                    href={chain.tokenExplorer(pick.mint)}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -174,7 +217,7 @@ function SmartMoney() {
                         <div className="sm-wallet-name">{tx.wallet}</div>
                         <a
                           className="sm-wallet-address sm-link"
-                          href={`https://solscan.io/account/${tx.wallet_address}`}
+                          href={chain.addressExplorer(tx.wallet_address)}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -197,7 +240,7 @@ function SmartMoney() {
                       <td>
                         <a
                           className="sm-link"
-                          href={`https://solscan.io/token/${tx.mint}`}
+                          href={chain.tokenExplorer(tx.mint)}
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -212,10 +255,11 @@ function SmartMoney() {
                       </td>
 
                       <td>
-                        $
-                        {Number(tx.price_usd).toLocaleString(undefined, {
-                          maximumFractionDigits: 6,
-                        })}
+                        {tx.price_unavailable
+                          ? "Price unavailable"
+                          : `$${Number(tx.price_usd).toLocaleString(undefined, {
+                              maximumFractionDigits: 6,
+                            })}`}
                       </td>
 
                       <td>{formatUsd(tx.value_usd)}</td>

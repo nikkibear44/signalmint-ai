@@ -72,6 +72,16 @@ export async function getSmartMoney() {
   return response.json();
 }
 
+export async function getRobinhoodSmartMoney() {
+  const response = await fetch(`${API_BASE}/robinhood-smart-money`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch Robinhood Chain Smart Money feed.");
+  }
+
+  return response.json();
+}
+
 export async function getWalletPortfolio(address) {
   const response = await fetch(`${API_BASE}/wallet-portfolio/${address}`);
 
