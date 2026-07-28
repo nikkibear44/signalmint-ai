@@ -59,6 +59,10 @@ export async function getTradePlan(coin) {
     }),
   });
 
+  if (!response.ok) {
+    throw new Error(`Trade plan request failed with status ${response.status}`);
+  }
+
   return response.json();
 }
 
@@ -97,6 +101,24 @@ export async function getEvmPortfolio(chain, address) {
 
   if (!response.ok) {
     throw new Error("Failed to fetch EVM wallet portfolio.");
+  }
+
+  return response.json();
+}
+
+export async function getDueDiligence(project) {
+  const response = await fetch(`${API_BASE}/due-diligence`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      project,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to generate due diligence report.");
   }
 
   return response.json();

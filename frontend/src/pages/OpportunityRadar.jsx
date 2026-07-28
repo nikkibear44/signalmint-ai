@@ -144,11 +144,11 @@ function OpportunityRadar() {
     setTradePlan(null);
 
     const coinForPlan = {
-      name: marketData.name,
-      symbol: marketData.symbol,
-      price: marketData.price,
-      change_24h: marketData.change_24h,
-      market_cap: marketData.market_cap,
+      name: marketData.name || "Unknown",
+      symbol: marketData.symbol || "N/A",
+      price: marketData.price ?? 0,
+      change_24h: marketData.change_24h ?? 0,
+      market_cap: marketData.market_cap ?? 0,
       catalyst: catalystsList[0] || "No confirmed upcoming catalyst.",
       reasons:
         catalystsList.length > 0

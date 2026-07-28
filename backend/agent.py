@@ -372,28 +372,36 @@ Project:
 
 
 def generate_trade_plan(coin):
+    name = coin.get("name", "Unknown")
+    symbol = coin.get("symbol", "N/A")
+    price = coin.get("price", "N/A")
+    change_24h = coin.get("change_24h", "N/A")
+    market_cap = coin.get("market_cap", "N/A")
+    catalyst = coin.get("catalyst", "No confirmed upcoming catalyst.")
+    reasons = coin.get("reasons") or ["No specific reasons provided."]
+
     prompt = f"""
 You are an elite crypto analyst.
 
 Create an actionable trade plan using ONLY the information below.
 
 Token:
-{coin["name"]} ({coin["symbol"]})
+{name} ({symbol})
 
 Current Price:
-{coin["price"]}
+{price}
 
 24h Change:
-{coin["change_24h"]}%
+{change_24h}%
 
 Market Cap:
-{coin["market_cap"]}
+{market_cap}
 
 Catalyst:
-{coin["catalyst"]}
+{catalyst}
 
 Reasons:
-{chr(10).join("- " + r for r in coin["reasons"])}
+{chr(10).join("- " + r for r in reasons)}
 
 Return ONLY valid JSON.
 
@@ -417,6 +425,7 @@ Rules:
 - No extra text.
 - Keep every value concise.
 - Base the response only on the supplied token information.
+- If price, market cap, or 24h change is "N/A", explicitly account for that limited data in your summary rather than inventing numbers.
 """
 
     response = ask_ai(prompt)
