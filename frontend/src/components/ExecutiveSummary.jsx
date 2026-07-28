@@ -1,3 +1,29 @@
+function parseRisk(risk) {
+  // Matches patterns like "Technology Risk: Medium — explanation text"
+  const match = risk.match(/^(.+?Risk):\s*(Low|Medium|High)\s*[—-]\s*(.+)$/i);
+
+  if (!match) {
+    return { label: null, level: null, text: risk };
+  }
+
+  return {
+    label: match[1].trim(),
+    level: match[2].trim(),
+    text: match[3].trim(),
+  };
+}
+
+function riskBadgeClass(level) {
+  if (!level) return "";
+  const normalized = level.toLowerCase();
+
+  if (normalized === "low") return "es-risk-badge es-risk-low";
+  if (normalized === "medium") return "es-risk-badge es-risk-medium";
+  if (normalized === "high") return "es-risk-badge es-risk-high";
+
+  return "es-risk-badge";
+}
+
 function ExecutiveSummary({
   reason,
   catalysts,
@@ -54,23 +80,14 @@ function ExecutiveSummary({
           🚀 Key Catalysts
         </h3>
 
-        <ul
-          style={{
-            paddingLeft: 22,
-            lineHeight: 1.8,
-          }}
-        >
+        <div className="es-catalyst-grid">
           {catalysts.map((item, index) => (
-            <li
-              key={index}
-              style={{
-                marginBottom: 10,
-              }}
-            >
-              {item}
-            </li>
+            <div key={index} className="es-catalyst-card">
+              <span className="es-check-icon">✓</span>
+              <span>{item}</span>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
       {/* Risks */}
@@ -92,21 +109,29 @@ function ExecutiveSummary({
             gap: 16,
           }}
         >
-          {risks.map((risk, index) => (
-            <div
-              key={index}
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 12,
-                padding: 16,
-                lineHeight: 1.7,
-                color: "#ddd",
-              }}
-            >
-              {risk}
-            </div>
-          ))}
+          {risks.map((risk, index) => {
+            const parsed = parseRisk(risk);
+
+            if (!parsed.label) {
+              return (
+                <div key={index} className="es-risk-card">
+                  {risk}
+                </div>
+              );
+            }
+
+            return (
+              <div key={index} className="es-risk-card">
+                <div className="es-risk-header">
+                  <span className="es-risk-label">{parsed.label}</span>
+                  <span className={riskBadgeClass(parsed.level)}>
+                    {parsed.level}
+                  </span>
+                </div>
+                <p className="es-risk-text">{parsed.text}</p>
+              </div>
+            );
+          })}
         </div>
 
       </div>
