@@ -1,6 +1,42 @@
+import os
+import time
 import requests
 
 BASE_URL = "https://api.coingecko.com/api/v3"
+
+COINGECKO_API_KEY = os.getenv("COINGECKO_API_KEY")
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; SignalMintAI/1.0; +https://signalmint-ai.vercel.app)",
+    "Accept": "application/json",
+}
+
+if COINGECKO_API_KEY:
+    HEADERS["x-cg-demo-api-key"] = COINGECKO_API_KEY
+
+
+def _fetch_with_retry(url, params=None, retries=2, timeout=15):
+    last_error = None
+
+    for attempt in range(retries + 1):
+        try:
+            response = requests.get(
+                url,
+                params=params,
+                headers=HEADERS,
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            return response
+
+        except Exception as e:
+            last_error = e
+            print(f"[Market] Attempt {attempt + 1} failed: {e}")
+
+            if attempt < retries:
+                time.sleep(1.5 * (attempt + 1))
+
+    raise last_error
 
 
 def search_coin(query):
@@ -9,14 +45,15 @@ def search_coin(query):
     """
 
     try:
-        url = f"{BASE_URL}/search?query={query}"
-
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
+        response = _fetch_with_retry(
+            f"{BASE_URL}/search",
+            params={"query": query},
+        )
 
         coins = response.json().get("coins", [])
 
         if not coins:
+            print(f"[Market] No search results for query: {query}")
             return None
 
         q = query.lower().strip()
@@ -50,7 +87,7 @@ def search_coin(query):
         return coins[0]["id"]
 
     except Exception as e:
-        print("CoinGecko Search Error:", e)
+        print("[Market] CoinGecko Search Error (all retries failed):", e)
         return None
 
 
@@ -65,19 +102,17 @@ def get_market_data(query):
         return None
 
     try:
-        url = f"{BASE_URL}/coins/{coin_id}"
-
-        params = {
-            "localization": "false",
-            "tickers": "false",
-            "market_data": "true",
-            "community_data": "false",
-            "developer_data": "false",
-            "sparkline": "false",
-        }
-
-        response = requests.get(url, params=params, timeout=15)
-        response.raise_for_status()
+        response = _fetch_with_retry(
+            f"{BASE_URL}/coins/{coin_id}",
+            params={
+                "localization": "false",
+                "tickers": "false",
+                "market_data": "true",
+                "community_data": "false",
+                "developer_data": "false",
+                "sparkline": "false",
+            },
+        )
 
         data = response.json()
 
@@ -113,5 +148,5 @@ def get_market_data(query):
         }
 
     except Exception as e:
-        print("CoinGecko Error:", e)
+        print("[Market] CoinGecko Error (all retries failed):", e)
         return None
