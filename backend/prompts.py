@@ -283,11 +283,18 @@ Do not repeat previous sections.
 
 ## Key Catalysts
 
-Mention upcoming developments only if they are publicly known.
+Provide 2-3 concise bullet points on what could actually move this token, using BOTH of these sources:
 
-Otherwise state:
+1. Confirmed upcoming events, if publicly known (mainnet launch, exchange listing, token unlock, governance vote, etc.)
+2. Verified CURRENT momentum signals from the supplied market data - real, not invented - such as:
+   - Notable 24h price movement relative to typical volatility
+   - Trading volume that is unusually high or low relative to market cap
+   - Recent CoinGecko rank movement
+   - Genesis date proximity (very new listings can be a catalyst in themselves)
 
-"No confirmed upcoming catalyst is publicly available."
+Only fall back to "No confirmed upcoming catalyst is publicly available." if there is truly no upcoming event AND the market data shows no notable current momentum either. Do not use this fallback as a default - use it only when it is genuinely accurate.
+
+Never invent a specific event, date, or partnership that was not provided in the verified data.
 
 ---
 
