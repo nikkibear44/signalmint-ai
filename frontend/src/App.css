@@ -2005,3 +2005,25 @@ footer {
   border-radius: 16px;
   box-shadow: 0 0 20px rgba(46, 230, 184, 0.1);
 }
+
+/* ---------- OPPORTUNITY RADAR: REPORT TOGGLE ---------- */
+
+.or-report-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: #2ee6b8;
+  font-size: 17px;
+  font-weight: 700;
+  padding: 4px 0;
+  text-align: left;
+}
+
+.or-report-toggle-arrow {
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+}

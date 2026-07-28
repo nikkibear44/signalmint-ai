@@ -31,6 +31,7 @@ function OpportunityRadar() {
 
   const [tradePlan, setTradePlan] = useState(null);
   const [tradePlanLoading, setTradePlanLoading] = useState(false);
+  const [showFullReport, setShowFullReport] = useState(false);
 
   const [catalysts, setCatalysts] = useState([]);
   const [risks, setRisks] = useState([]);
@@ -135,20 +136,15 @@ function OpportunityRadar() {
   }
 
   async function loadTradePlanFor(marketData, catalystsList) {
-    if (!marketData) {
-      setTradePlan(null);
-      return;
-    }
-
     setTradePlanLoading(true);
     setTradePlan(null);
 
     const coinForPlan = {
-      name: marketData.name || "Unknown",
-      symbol: marketData.symbol || "N/A",
-      price: marketData.price ?? 0,
-      change_24h: marketData.change_24h ?? 0,
-      market_cap: marketData.market_cap ?? 0,
+      name: marketData?.name || currentToken || "Unknown",
+      symbol: marketData?.symbol || currentToken || "N/A",
+      price: marketData?.price ?? "N/A",
+      change_24h: marketData?.change_24h ?? "N/A",
+      market_cap: marketData?.market_cap ?? "N/A",
       catalyst: catalystsList[0] || "No confirmed upcoming catalyst.",
       reasons:
         catalystsList.length > 0
@@ -220,6 +216,7 @@ function OpportunityRadar() {
     setReason("");
     setExecutiveSummary("");
     setTradePlan(null);
+    setShowFullReport(false);
 
     try {
       const data = await analyzeToken(query);
@@ -249,6 +246,7 @@ function OpportunityRadar() {
     setReason("");
     setExecutiveSummary("");
     setTradePlan(null);
+    setShowFullReport(false);
 
     try {
       const data = await analyzeToken(symbol);
@@ -818,18 +816,24 @@ function OpportunityRadar() {
               borderRadius: "16px",
             }}
           >
-            <h2
-              style={{
-                marginBottom: "20px",
-                color: "#2ee6b8",
-              }}
+            <button
+              className="or-report-toggle"
+              onClick={() => setShowFullReport((prev) => !prev)}
             >
-              🤖 SignalMint AI Report
-            </h2>
+              <span>🤖 Full SignalMint AI Report</span>
+              <span className="or-report-toggle-arrow">
+                {showFullReport ? "▲ Hide" : "▼ Read full report"}
+              </span>
+            </button>
 
-            <div className="ai-report" style={{ fontSize: "15px" }}>
-              <ReactMarkdown>{report}</ReactMarkdown>
-            </div>
+            {showFullReport && (
+              <div
+                className="ai-report"
+                style={{ fontSize: "15px", marginTop: "20px" }}
+              >
+                <ReactMarkdown>{report}</ReactMarkdown>
+              </div>
+            )}
           </div>
         )}
       </div>
