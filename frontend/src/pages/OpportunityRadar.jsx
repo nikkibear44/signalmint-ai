@@ -23,6 +23,20 @@ function cleanPlanValue(value) {
   return value;
 }
 
+function buildExecutionInstruction(tokenSymbol, plan, amountUsd) {
+  return `I'd like to execute a trade based on this AI-generated plan from SignalMint AI.
+
+Token: ${tokenSymbol}
+Bias: ${plan.overall_bias}
+Suggested Action: ${plan.suggested_action}
+Entry Zone: ${cleanPlanValue(plan.entry_zone)}
+Take Profit: ${cleanPlanValue(plan.take_profit)}
+Stop Loss: ${cleanPlanValue(plan.stop_loss)}
+Amount: ~$${amountUsd} USDT0
+
+Please use the OKX Agent Payments Protocol / OKX DEX to execute this swap on my behalf, using my own connected wallet. Confirm the trade details with me before signing anything.`;
+}
+
 function biasClass(bias) {
   const normalized = (bias || "").toLowerCase();
 
@@ -44,6 +58,9 @@ function OpportunityRadar() {
   const [tradePlan, setTradePlan] = useState(null);
   const [tradePlanLoading, setTradePlanLoading] = useState(false);
   const [showFullReport, setShowFullReport] = useState(false);
+  const [executionAmount, setExecutionAmount] = useState("100");
+  const [showExecutionPrep, setShowExecutionPrep] = useState(false);
+  const [copiedExecution, setCopiedExecution] = useState(false);
 
   const [catalysts, setCatalysts] = useState([]);
   const [risks, setRisks] = useState([]);
@@ -229,6 +246,8 @@ function OpportunityRadar() {
     setExecutiveSummary("");
     setTradePlan(null);
     setShowFullReport(false);
+    setShowExecutionPrep(false);
+    setCopiedExecution(false);
 
     try {
       const data = await analyzeToken(query);
@@ -259,6 +278,8 @@ function OpportunityRadar() {
     setExecutiveSummary("");
     setTradePlan(null);
     setShowFullReport(false);
+    setShowExecutionPrep(false);
+    setCopiedExecution(false);
 
     try {
       const data = await analyzeToken(symbol);
@@ -797,6 +818,70 @@ function OpportunityRadar() {
                   <div className="tdm-summary-text">
                     {tradePlan.summary || "No summary available."}
                   </div>
+                </div>
+
+                <div className="oc-execution-section">
+                  <button
+                    className="oc-execute-btn"
+                    onClick={() => setShowExecutionPrep((prev) => !prev)}
+                  >
+                    🚀 {showExecutionPrep ? "Hide Execution" : "Prepare Execution"}
+                  </button>
+
+                  {showExecutionPrep && (
+                    <div className="oc-execution-card">
+                      <div className="oc-execution-label">
+                        Amount to allocate (USDT0)
+                      </div>
+
+                      <input
+                        type="number"
+                        className="oc-execution-amount-input"
+                        value={executionAmount}
+                        onChange={(e) => {
+                          setExecutionAmount(e.target.value);
+                          setCopiedExecution(false);
+                        }}
+                        min="1"
+                      />
+
+                      <div className="oc-execution-label" style={{ marginTop: 16 }}>
+                        Instruction for your agent
+                      </div>
+
+                      <pre className="oc-execution-text">
+                        {buildExecutionInstruction(
+                          currentToken || query,
+                          tradePlan,
+                          executionAmount
+                        )}
+                      </pre>
+
+                      <button
+                        className="oc-copy-btn"
+                        onClick={() => {
+                          navigator.clipboard.writeText(
+                            buildExecutionInstruction(
+                              currentToken || query,
+                              tradePlan,
+                              executionAmount
+                            )
+                          );
+                          setCopiedExecution(true);
+                          setTimeout(() => setCopiedExecution(false), 2000);
+                        }}
+                      >
+                        {copiedExecution ? "✓ Copied" : "📋 Copy Instruction"}
+                      </button>
+
+                      <p className="oc-execution-disclaimer">
+                        SignalMint AI does not hold funds or execute trades
+                        itself. This copies a ready-to-send instruction for
+                        your own agent to execute using your own connected
+                        wallet.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </>
             )}
