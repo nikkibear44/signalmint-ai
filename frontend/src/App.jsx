@@ -8,6 +8,7 @@ import OpportunityRadar from "./pages/OpportunityRadar";
 import AlphaScanner from "./pages/AlphaScanner";
 import SmartMoneyPage from "./pages/SmartMoney";
 import PortfolioDoctor from "./pages/PortfolioDoctor";
+import TokenIntelligence from "./pages/TokenIntelligence";
 
 function App() {
   return (
@@ -34,6 +35,11 @@ function App() {
       <Route
         path="/dashboard/portfolio-doctor"
         element={<PortfolioDoctor />}
+      />
+
+      <Route
+        path="/dashboard/token-intelligence"
+        element={<TokenIntelligence />}
       />
     </Routes>
   );
