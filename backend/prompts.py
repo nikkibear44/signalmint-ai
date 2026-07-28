@@ -439,6 +439,15 @@ Sections:
 
 ## Key Catalysts
 
+Cite 2-3 concrete signals FROM THE LIVE PROJECT DATA JSON ONLY, combining both:
+
+1. Any confirmed upcoming event explicitly present in the data (if any)
+2. Verified current momentum visible in the data itself - notable TVL level, trading volume, GitHub activity, or social metrics, if present
+
+Do not default to "no confirmed catalyst" unless the data genuinely contains no notable figures worth citing. If a specific metric in the JSON stands out (unusually high/low relative to what would be typical), cite it as a catalyst-relevant signal.
+
+Never invent an event, date, or metric not present in the JSON. If the JSON truly contains nothing catalyst-relevant, state: "No confirmed upcoming catalyst is publicly available from the data provided."
+
 ## Risk Assessment
 
 ## Final Verdict

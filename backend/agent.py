@@ -331,8 +331,39 @@ Do not provide financial advice.
     return ask_ai(prompt)
 
 
-def due_diligence(project):
+def extract_project_name(user_query):
+    """
+    Extracts the actual project/token name from a natural-language
+    question, so the free-text search box can accept full questions
+    like "Is Solana a good long-term hold?" instead of requiring a
+    bare project name.
+    """
+
+    prompt = f"""
+Extract ONLY the crypto project or token name being asked about in this question.
+
+Question:
+{user_query}
+
+Rules:
+- Return ONLY the project/token name, nothing else.
+- No explanation, no punctuation, no extra words.
+- If multiple projects are mentioned, return the PRIMARY one being asked about.
+- If no specific project is identifiable, return exactly: UNKNOWN
+"""
+
+    result = ask_ai(prompt).strip()
+
+    return result
+
+
+def due_diligence(user_query):
     import json
+
+    project = extract_project_name(user_query)
+
+    if project.upper() == "UNKNOWN":
+        project = user_query  # fall back to raw input as a last resort
 
     project_data = collect_project_data(project)
 
@@ -340,6 +371,17 @@ def due_diligence(project):
 
     prompt = f"""
 {DUE_DILIGENCE_PROMPT}
+
+The user's original question was:
+"{user_query}"
+
+Before the full report, add this section FIRST, above "# Executive Summary":
+
+# Direct Answer
+
+Answer the user's original question directly in 2-4 concise sentences, using only the verified JSON data below. If their question can't be fully answered from the available data, say so explicitly rather than guessing.
+
+---
 
 The following JSON is the ONLY verified evidence.
 
