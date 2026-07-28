@@ -23,6 +23,26 @@ function cleanPlanValue(value) {
   return value;
 }
 
+function hasActionablePlan(plan) {
+  // A real, executable plan needs an actual number/price somewhere in
+  // the entry zone - not just qualitative language like "wait for
+  // stabilization" or "monitor for volume increase".
+  if (!plan?.entry_zone) return false;
+
+  const hasNumber = /\d/.test(plan.entry_zone);
+  const entryLower = plan.entry_zone.toLowerCase();
+
+  const waitLanguage = [
+    "wait",
+    "monitor",
+    "n/a",
+    "reassess",
+    "unavailable",
+  ].some((phrase) => entryLower.includes(phrase));
+
+  return hasNumber && !waitLanguage;
+}
+
 function buildExecutionInstruction(tokenSymbol, plan, amountUsd) {
   return `I'd like to execute a trade based on this AI-generated plan from SignalMint AI.
 
@@ -821,14 +841,23 @@ function OpportunityRadar() {
                 </div>
 
                 <div className="oc-execution-section">
-                  <button
-                    className="oc-execute-btn"
-                    onClick={() => setShowExecutionPrep((prev) => !prev)}
-                  >
-                    🚀 {showExecutionPrep ? "Hide Execution" : "Prepare Execution"}
-                  </button>
+                  {hasActionablePlan(tradePlan) ? (
+                    <button
+                      className="oc-execute-btn"
+                      onClick={() => setShowExecutionPrep((prev) => !prev)}
+                    >
+                      🚀 {showExecutionPrep ? "Hide Execution" : "Prepare Execution"}
+                    </button>
+                  ) : (
+                    <div className="oc-not-actionable">
+                      ⏳ This is a monitor/wait recommendation, not a
+                      ready-to-execute trade — there's no specific price
+                      target yet. Check back once the AI identifies a
+                      concrete entry point.
+                    </div>
+                  )}
 
-                  {showExecutionPrep && (
+                  {showExecutionPrep && hasActionablePlan(tradePlan) && (
                     <div className="oc-execution-card">
                       <div className="oc-execution-label">
                         Amount to allocate (USDT0)
