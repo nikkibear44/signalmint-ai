@@ -127,6 +127,10 @@ def _get_erc20_holdings(explorer_url, address):
             decimals = int(token.get("decimals") or 18)
             raw_value = item.get("value", "0")
 
+            # Blockscout's field name for the contract address has varied
+            # across versions - try both to be safe.
+            contract_address = token.get("address") or token.get("address_hash")
+
             try:
                 amount = int(raw_value) / (10 ** decimals)
             except Exception:
@@ -135,11 +139,18 @@ def _get_erc20_holdings(explorer_url, address):
             if amount <= 0:
                 continue
 
+            if not contract_address:
+                print(
+                    f"[EVM Portfolio DEBUG] No contract address found for "
+                    f"token: {token}"
+                )
+                continue
+
             holdings.append(
                 {
                     "symbol": token.get("symbol", "?"),
                     "name": token.get("name", token.get("symbol", "?")),
-                    "contract_address": token.get("address"),
+                    "contract_address": contract_address,
                     "amount": amount,
                 }
             )
