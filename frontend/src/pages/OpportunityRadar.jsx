@@ -5,10 +5,19 @@ import {
   analyzeToken,
   getMarketSnapshot,
   getTrendingTokens,
+  getTradePlan,
 } from "../services/api";
 import MetricCard from "../components/MetricCard";
 import "../styles/dashboard.css";
 import ExecutiveSummary from "../components/ExecutiveSummary";
+
+function biasClass(bias) {
+  const normalized = (bias || "").toLowerCase();
+
+  if (normalized === "bullish") return "tdm-bias tdm-bias-bullish";
+  if (normalized === "bearish") return "tdm-bias tdm-bias-bearish";
+  return "tdm-bias tdm-bias-neutral";
+}
 
 function OpportunityRadar() {
   const [query, setQuery] = useState("");
@@ -19,6 +28,9 @@ function OpportunityRadar() {
   const [confidence, setConfidence] = useState(null);
   const [reason, setReason] = useState("");
   const [executiveSummary, setExecutiveSummary] = useState("");
+
+  const [tradePlan, setTradePlan] = useState(null);
+  const [tradePlanLoading, setTradePlanLoading] = useState(false);
 
   const [catalysts, setCatalysts] = useState([]);
   const [risks, setRisks] = useState([]);
@@ -83,16 +95,16 @@ function OpportunityRadar() {
     // Key Catalysts
     // -------------------------
 
+    let catalystsList = [];
+
     if (data.insights?.catalysts) {
-      setCatalysts(
-        data.insights.catalysts
-          .split("\n")
-          .map((line) => line.replace(/^[-•*]\s*/, "").trim())
-          .filter((line) => line.length > 0)
-      );
-    } else {
-      setCatalysts([]);
+      catalystsList = data.insights.catalysts
+        .split("\n")
+        .map((line) => line.replace(/^[-•*]\s*/, "").trim())
+        .filter((line) => line.length > 0);
     }
+
+    setCatalysts(catalystsList);
 
     // -------------------------
     // Risks
@@ -113,6 +125,46 @@ function OpportunityRadar() {
     } else {
       setRisks([]);
     }
+
+    // -------------------------
+    // Decision Card (reuses the same AI trade plan logic
+    // that already works in Alpha Scanner)
+    // -------------------------
+
+    loadTradePlanFor(data.market, catalystsList);
+  }
+
+  async function loadTradePlanFor(marketData, catalystsList) {
+    if (!marketData) {
+      setTradePlan(null);
+      return;
+    }
+
+    setTradePlanLoading(true);
+    setTradePlan(null);
+
+    const coinForPlan = {
+      name: marketData.name,
+      symbol: marketData.symbol,
+      price: marketData.price,
+      change_24h: marketData.change_24h,
+      market_cap: marketData.market_cap,
+      catalyst: catalystsList[0] || "No confirmed upcoming catalyst.",
+      reasons:
+        catalystsList.length > 0
+          ? catalystsList
+          : ["AI opportunity score analysis"],
+    };
+
+    try {
+      const result = await getTradePlan(coinForPlan);
+      setTradePlan(result.report || null);
+    } catch (err) {
+      console.error(err);
+      setTradePlan(null);
+    }
+
+    setTradePlanLoading(false);
   }
 
   function addToWatchlist() {
@@ -167,6 +219,7 @@ function OpportunityRadar() {
     setConfidence(null);
     setReason("");
     setExecutiveSummary("");
+    setTradePlan(null);
 
     try {
       const data = await analyzeToken(query);
@@ -195,6 +248,7 @@ function OpportunityRadar() {
     setConfidence(null);
     setReason("");
     setExecutiveSummary("");
+    setTradePlan(null);
 
     try {
       const data = await analyzeToken(symbol);
@@ -677,6 +731,69 @@ function OpportunityRadar() {
             >
               ⭐ Add to Watchlist
             </button>
+          </div>
+        )}
+
+        {opportunityScore !== null && (
+          <div className="oc-decision-card">
+            <div className="tdm-section-label">🎯 AI Decision Center</div>
+
+            {tradePlanLoading && (
+              <>
+                <div className="tdm-plan-skeleton" style={{ height: 44, width: 160 }} />
+                <div
+                  className="tdm-plan-grid"
+                  style={{ marginTop: 16 }}
+                >
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="tdm-plan-skeleton"
+                      style={{ height: 70 }}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {!tradePlanLoading && tradePlan && (
+              <>
+                <div className={biasClass(tradePlan.overall_bias)}>
+                  {tradePlan.overall_bias}
+                </div>
+
+                <div className="tdm-action-card">
+                  <div className="tdm-action-label">🎯 Suggested Action</div>
+                  <strong>{tradePlan.suggested_action}</strong>
+                </div>
+
+                <div className="tdm-plan-grid">
+                  {[
+                    ["🎯 Entry Zone", tradePlan.entry_zone],
+                    ["💰 Take Profit", tradePlan.take_profit],
+                    ["🛑 Stop Loss", tradePlan.stop_loss],
+                    ["⏳ Holding Period", tradePlan.holding_period],
+                    ["⚖️ Risk / Reward", tradePlan.risk_reward],
+                  ].map(([title, value]) => (
+                    <div key={title} className="tdm-plan-cell">
+                      <span>{title}</span>
+                      <strong>{value}</strong>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="tdm-summary-card">
+                  <div className="tdm-action-label">📝 AI Summary</div>
+                  <div className="tdm-summary-text">{tradePlan.summary}</div>
+                </div>
+              </>
+            )}
+
+            {!tradePlanLoading && !tradePlan && (
+              <p style={{ color: "#999" }}>
+                Unable to generate a decision plan for this token.
+              </p>
+            )}
           </div>
         )}
 

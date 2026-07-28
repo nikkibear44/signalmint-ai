@@ -1994,3 +1994,14 @@ footer {
   border-color: #2ee6b8;
   color: #2ee6b8;
 }
+
+/* ---------- OPPORTUNITY RADAR: DECISION CARD ---------- */
+
+.oc-decision-card {
+  margin-top: 25px;
+  padding: 24px;
+  background: #111;
+  border: 1px solid #2ee6b8;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(46, 230, 184, 0.1);
+}
