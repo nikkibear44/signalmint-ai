@@ -10,6 +10,7 @@ from alpha_scanner import scan_alpha
 from smart_money import get_smart_money
 from wallet_portfolio import get_wallet_portfolio
 from evm_portfolio import get_evm_portfolio
+from robinhood_smart_money import get_robinhood_smart_money
 
 from agent import (
     crypto_analysis,
@@ -338,6 +339,27 @@ def smart_money():
         "success": True,
         "results": get_smart_money(),
     }
+
+
+# ===========================
+# Robinhood Chain Smart Money
+# ===========================
+
+@app.get("/robinhood-smart-money")
+def robinhood_smart_money():
+
+    try:
+        return {
+            "success": True,
+            "results": get_robinhood_smart_money(),
+        }
+    except Exception as e:
+        print(f"[Robinhood Smart Money Error] {e}")
+
+        return {
+            "success": False,
+            "message": "Unable to fetch Robinhood Chain smart money feed.",
+        }
 
 
 # ===========================
