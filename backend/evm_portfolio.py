@@ -162,10 +162,20 @@ def _get_dexscreener_price(chain_slug, contract_address):
         data = response.json()
         pairs = data.get("pairs") or []
 
+        print(
+            f"[EVM Portfolio DEBUG] {contract_address}: "
+            f"{len(pairs)} total pairs found, "
+            f"chainIds present: {set(p.get('chainId') for p in pairs)}"
+        )
+
         # Only keep pairs actually on this chain
         chain_pairs = [p for p in pairs if p.get("chainId") == chain_slug]
 
         if not chain_pairs:
+            print(
+                f"[EVM Portfolio DEBUG] No pairs matched chain_slug='{chain_slug}' "
+                f"for {contract_address}"
+            )
             return 0
 
         best = max(
