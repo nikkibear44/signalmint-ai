@@ -3,12 +3,41 @@ import time
 
 COINGECKO_API = "https://api.coingecko.com/api/v3"
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; SignalMintAI/1.0; +https://signalmint-ai.vercel.app)",
+    "Accept": "application/json",
+}
+
 CACHE = {
     "data": None,
     "timestamp": 0,
 }
 
-CACHE_DURATION = 60  # seconds
+CACHE_DURATION = 120  # seconds
+
+
+def _fetch_with_retry(url, params=None, retries=2, timeout=15):
+    last_error = None
+
+    for attempt in range(retries + 1):
+        try:
+            response = requests.get(
+                url,
+                params=params,
+                headers=HEADERS,
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            return response
+
+        except Exception as e:
+            last_error = e
+            print(f"[Trending] Attempt {attempt + 1} failed: {e}")
+
+            if attempt < retries:
+                time.sleep(1.5 * (attempt + 1))
+
+    raise last_error
 
 
 def get_trending_tokens():
@@ -22,55 +51,54 @@ def get_trending_tokens():
         print("Using cached trending data")
         return CACHE["data"]
 
-    # Get trending list
-    trending = requests.get(
-        f"{COINGECKO_API}/search/trending",
-        timeout=15,
-    )
+    try:
+        # Get trending list
+        trending = _fetch_with_retry(f"{COINGECKO_API}/search/trending")
 
-    trending.raise_for_status()
+        data = trending.json()
 
-    data = trending.json()
+        # Collect all CoinGecko IDs
+        coin_ids = [coin["item"]["id"] for coin in data["coins"]]
 
-    # Collect all CoinGecko IDs
-    coin_ids = []
+        # Fetch ALL market data in ONE request
+        markets = _fetch_with_retry(
+            f"{COINGECKO_API}/coins/markets",
+            params={
+                "vs_currency": "usd",
+                "ids": ",".join(coin_ids),
+            },
+        )
 
-    for coin in data["coins"]:
-        coin_ids.append(coin["item"]["id"])
+        market_data = markets.json()
 
-    # Fetch ALL market data in ONE request
-    markets = requests.get(
-        f"{COINGECKO_API}/coins/markets",
-        params={
-            "vs_currency": "usd",
-            "ids": ",".join(coin_ids),
-        },
-        timeout=15,
-    )
+        tokens = []
 
-    markets.raise_for_status()
+        for market in market_data:
+            tokens.append(
+                {
+                    "name": market["name"],
+                    "symbol": market["symbol"].upper(),
+                    "rank": market["market_cap_rank"],
+                    "price": market["current_price"],
+                    "change_24h": market["price_change_percentage_24h"],
+                    "market_cap": market["market_cap"],
+                    "categories": market.get("categories", []),
+                    "coingecko_rank": market.get("market_cap_rank"),
+                }
+            )
 
-    market_data = markets.json()
+        CACHE["data"] = tokens
+        CACHE["timestamp"] = time.time()
 
-    tokens = []
+        print("Fetched fresh trending data")
 
-    for market in market_data:
-        tokens.append(
-    {
-        "name": market["name"],
-        "symbol": market["symbol"].upper(),
-        "rank": market["market_cap_rank"],
-        "price": market["current_price"],
-        "change_24h": market["price_change_percentage_24h"],
-        "market_cap": market["market_cap"],
-        "categories": market.get("categories", []),
-        "coingecko_rank": market.get("market_cap_rank"),
-    }
-)
+        return tokens
 
-    CACHE["data"] = tokens
-    CACHE["timestamp"] = time.time()
+    except Exception as e:
+        print("Trending Error (all retries failed):", e)
 
-    print("Fetched fresh trending data")
+        if CACHE["data"] is not None:
+            print("Returning stale cached trending data instead of empty")
+            return CACHE["data"]
 
-    return tokens
+        return []

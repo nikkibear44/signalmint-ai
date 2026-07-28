@@ -3,12 +3,41 @@ import time
 
 BASE_URL = "https://api.coingecko.com/api/v3"
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (compatible; SignalMintAI/1.0; +https://signalmint-ai.vercel.app)",
+    "Accept": "application/json",
+}
+
 CACHE = {
     "data": None,
     "timestamp": 0,
 }
 
-CACHE_DURATION = 60  # seconds
+CACHE_DURATION = 120  # seconds - increased to reduce repeat calls
+
+
+def _fetch_with_retry(url, params=None, retries=2, timeout=10):
+    last_error = None
+
+    for attempt in range(retries + 1):
+        try:
+            response = requests.get(
+                url,
+                params=params,
+                headers=HEADERS,
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            return response
+
+        except Exception as e:
+            last_error = e
+            print(f"[Market Snapshot] Attempt {attempt + 1} failed: {e}")
+
+            if attempt < retries:
+                time.sleep(1.5 * (attempt + 1))  # backoff: 1.5s, 3s
+
+    raise last_error
 
 
 def get_global_market():
@@ -27,11 +56,7 @@ def get_global_market():
         return CACHE["data"]
 
     try:
-        response = requests.get(
-            f"{BASE_URL}/global",
-            timeout=10,
-        )
-        response.raise_for_status()
+        response = _fetch_with_retry(f"{BASE_URL}/global")
 
         data = response.json()["data"]
 
@@ -55,10 +80,10 @@ def get_global_market():
         return result
 
     except Exception as e:
-        print("Market Snapshot Error:", e)
+        print("Market Snapshot Error (all retries failed):", e)
 
         if CACHE["data"] is not None:
-            print("Returning cached global market data")
+            print("Returning stale cached global market data instead of zeros")
             return CACHE["data"]
 
         return {
