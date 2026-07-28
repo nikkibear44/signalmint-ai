@@ -9,6 +9,7 @@ from trending import get_trending_tokens
 from alpha_scanner import scan_alpha
 from smart_money import get_smart_money
 from wallet_portfolio import get_wallet_portfolio
+from evm_portfolio import get_evm_portfolio
 
 from agent import (
     crypto_analysis,
@@ -109,13 +110,13 @@ def analyze(data: AnalyzeRequest):
 
     response = response_template("analyze")
     response.update(
-    {
-        "query": data.query,
-        "market": result.get("market"),
-        "report": result.get("report"),
-        "insights": result.get("insights"),
-    }
-)
+        {
+            "query": data.query,
+            "market": result.get("market"),
+            "report": result.get("report"),
+            "insights": result.get("insights"),
+        }
+    )
 
     return response
 
@@ -278,7 +279,11 @@ def market_snapshot():
         "success": True,
         "data": data
     }
-    print("🚀 Alpha Scanner route registered")
+
+
+# ===========================
+# Alpha Scanner
+# ===========================
 
 @app.get("/alpha-scanner")
 async def alpha_scanner():
@@ -293,9 +298,6 @@ async def alpha_scanner():
 
     return response
 
-# ===========================
-# Trending Tokens
-# ===========================
 
 # ===========================
 # AI Trade Plan
@@ -310,7 +312,12 @@ def trade_plan(data: TradePlanRequest):
     response["report"] = report
 
     return response
-    
+
+
+# ===========================
+# Trending Tokens
+# ===========================
+
 @app.get("/trending")
 def trending():
 
@@ -319,7 +326,8 @@ def trending():
         "data": get_trending_tokens(),
     }
 
-    # ===========================
+
+# ===========================
 # Smart Money
 # ===========================
 
@@ -331,27 +339,49 @@ def smart_money():
         "results": get_smart_money(),
     }
 
-    # ===========================
-# Wallet Portfolio
+
 # ===========================
- 
+# Wallet Portfolio (Solana)
+# ===========================
+
 @app.get("/wallet-portfolio/{address}")
 def wallet_portfolio(address: str):
- 
+
     if not address.strip():
         return {"success": False, "message": "Wallet address is required."}
- 
+
     try:
         data = get_wallet_portfolio(address)
- 
+
         return {
             "success": True,
             "data": data,
         }
     except Exception as e:
         print(f"[Wallet Portfolio Error] {e}")
- 
+
         return {
             "success": False,
             "message": "Unable to fetch wallet portfolio.",
+        }
+
+
+# ===========================
+# EVM Portfolio (Robinhood Chain, Stable Mainnet)
+# ===========================
+
+@app.get("/evm-portfolio/{chain}/{address}")
+def evm_portfolio(chain: str, address: str):
+
+    if not address.strip():
+        return {"success": False, "message": "Wallet address is required."}
+
+    try:
+        return get_evm_portfolio(chain, address)
+    except Exception as e:
+        print(f"[EVM Portfolio Error] {e}")
+
+        return {
+            "success": False,
+            "message": "Unable to fetch EVM wallet portfolio.",
         }
