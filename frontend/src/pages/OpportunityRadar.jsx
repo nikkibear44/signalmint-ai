@@ -18,6 +18,7 @@ function OpportunityRadar() {
   const [signal, setSignal] = useState("");
   const [confidence, setConfidence] = useState(null);
   const [reason, setReason] = useState("");
+  const [executiveSummary, setExecutiveSummary] = useState("");
 
   const [catalysts, setCatalysts] = useState([]);
   const [risks, setRisks] = useState([]);
@@ -60,15 +61,23 @@ function OpportunityRadar() {
 
     const confidenceMatch = reportText.match(/Confidence:\s*(\d+)/i);
 
+    const reasonMatch = reportText.match(
+      /Reason:\s*([\s\S]*?)(?=\n(?:---|#))/i
+    );
+
     setOpportunityScore(scoreMatch ? Number(scoreMatch[1]) : null);
     setSignal(signalMatch ? signalMatch[1] : "");
     setConfidence(confidenceMatch ? Number(confidenceMatch[1]) : null);
 
     // -------------------------
-    // Executive Summary
+    // Score reason (distinct one-sentence reason, NOT the Executive Summary)
     // -------------------------
 
-    setReason(data.insights?.summary || "");
+    setReason(
+      reasonMatch ? reasonMatch[1].trim() : data.insights?.summary || ""
+    );
+
+    setExecutiveSummary(data.insights?.summary || "");
 
     // -------------------------
     // Key Catalysts
@@ -157,6 +166,7 @@ function OpportunityRadar() {
     setSignal("");
     setConfidence(null);
     setReason("");
+    setExecutiveSummary("");
 
     try {
       const data = await analyzeToken(query);
@@ -184,6 +194,7 @@ function OpportunityRadar() {
     setSignal("");
     setConfidence(null);
     setReason("");
+    setExecutiveSummary("");
 
     try {
       const data = await analyzeToken(symbol);
@@ -674,7 +685,7 @@ function OpportunityRadar() {
             score={opportunityScore}
             signal={signal}
             confidence={confidence}
-            reason={reason}
+            reason={executiveSummary}
             catalysts={catalysts}
             risks={risks}
           />
