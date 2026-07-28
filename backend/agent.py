@@ -111,8 +111,19 @@ def crypto_analysis(query):
     market = get_market_data(query.strip())
 
     market_info = "No live market data available."
+    source_label = "Verified CoinGecko Information"
 
     if market:
+
+        source = market.get("source")
+
+        if source == "dexscreener":
+            source_label = (
+                "Live DEX Trading Data (DexScreener - this token is not "
+                "yet listed on CoinGecko, so fundamentals like team/"
+                "description/rank are unavailable; price/volume data "
+                "reflects live on-chain trading)"
+            )
 
         categories = ", ".join(market.get("categories", []))
         if not categories:
@@ -155,7 +166,7 @@ Project:
 
 {query}
 
-Verified CoinGecko Information:
+{source_label}:
 
 {market_info}
 
