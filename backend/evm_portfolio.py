@@ -173,20 +173,9 @@ def _get_dexscreener_price(chain_slug, contract_address):
         data = response.json()
         pairs = data.get("pairs") or []
 
-        print(
-            f"[EVM Portfolio DEBUG] {contract_address}: "
-            f"{len(pairs)} total pairs found, "
-            f"chainIds present: {set(p.get('chainId') for p in pairs)}"
-        )
-
-        # Only keep pairs actually on this chain
         chain_pairs = [p for p in pairs if p.get("chainId") == chain_slug]
 
         if not chain_pairs:
-            print(
-                f"[EVM Portfolio DEBUG] No pairs matched chain_slug='{chain_slug}' "
-                f"for {contract_address}"
-            )
             return 0
 
         best = max(
@@ -242,9 +231,10 @@ def get_evm_portfolio(chain_key, address):
             )
             value_usd = round(token["amount"] * price, 2)
 
-            # Skip dust under $1 (only when we have a real nonzero price)
-            if price > 0 and value_usd < 1:
-                continue
+            # Note: unlike Solana's spam-token filtering, we deliberately
+            # do NOT hide small-value holdings here - on a brand-new chain,
+            # showing real (even tiny) priced positions is more useful
+            # than hiding them.
 
             holdings.append(
                 {
