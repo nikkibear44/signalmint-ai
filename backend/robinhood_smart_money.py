@@ -1,5 +1,6 @@
 import json
 import pathlib
+import time
 import requests
 
 from smart_money import generate_ai_insight
@@ -12,8 +13,17 @@ wallet_file = pathlib.Path(__file__).parent / "robinhood_wallets.json"
 with open(wallet_file, "r", encoding="utf-8") as f:
     WALLETS = json.load(f)
 
+_price_cache = {}
+_PRICE_CACHE_TTL = 60  # seconds
+
 
 def _get_dexscreener_price(contract_address):
+    now = time.time()
+
+    cached = _price_cache.get(contract_address)
+    if cached and (now - cached["ts"]) < _PRICE_CACHE_TTL:
+        return cached["price"]
+
     try:
         response = requests.get(
             f"https://api.dexscreener.com/latest/dex/tokens/{contract_address}",
@@ -27,14 +37,16 @@ def _get_dexscreener_price(contract_address):
         chain_pairs = [p for p in pairs if p.get("chainId") == DEXSCREENER_CHAIN]
 
         if not chain_pairs:
-            return 0
+            price = 0
+        else:
+            best = max(
+                chain_pairs,
+                key=lambda p: float((p.get("liquidity") or {}).get("usd") or 0),
+            )
+            price = float(best.get("priceUsd") or 0)
 
-        best = max(
-            chain_pairs,
-            key=lambda p: float((p.get("liquidity") or {}).get("usd") or 0),
-        )
-
-        return float(best.get("priceUsd") or 0)
+        _price_cache[contract_address] = {"price": price, "ts": now}
+        return price
 
     except Exception as e:
         print(f"[Robinhood Smart Money] DexScreener price failed for {contract_address}: {e}")

@@ -78,12 +78,17 @@ function SmartMoney() {
   const [feed, setFeed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const chain = CHAINS[selectedChain];
 
   useEffect(() => {
-    async function loadFeed() {
-      setLoading(true);
+    let cancelled = false;
+
+    async function loadFeed(isBackgroundRefresh) {
+      if (!isBackgroundRefresh) {
+        setLoading(true);
+      }
       setError("");
 
       try {
@@ -92,15 +97,30 @@ function SmartMoney() {
             ? await getSmartMoney()
             : await getRobinhoodSmartMoney();
 
-        setFeed(data.results || []);
+        if (!cancelled) {
+          setFeed(data.results || []);
+          setLastUpdated(new Date());
+        }
       } catch (err) {
-        setError("Unable to load Smart Money feed.");
+        if (!cancelled) {
+          setError("Unable to load Smart Money feed.");
+        }
       }
 
-      setLoading(false);
+      if (!cancelled) {
+        setLoading(false);
+      }
     }
 
-    loadFeed();
+    loadFeed(false);
+
+    // Auto-refresh every 30 seconds without a full loading spinner
+    const interval = setInterval(() => loadFeed(true), 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [selectedChain]);
 
   const topPicks = useMemo(() => buildTopPicks(feed), [feed]);
@@ -116,21 +136,47 @@ function SmartMoney() {
       </div>
 
       {/* Chain selector */}
-      <div className="pd-chain-tabs">
-        {Object.entries(CHAINS).map(([key, c]) => (
-          <button
-            key={key}
-            className={`pd-chain-tab ${
-              selectedChain === key ? "pd-chain-tab-active" : ""
-            }`}
-            onClick={() => setSelectedChain(key)}
-          >
-            <span className="pd-chain-dot" style={{ background: c.badgeColor }}>
-              {c.badgeLetter}
+      <div className="sm-tabs-row">
+        <div className="pd-chain-tabs" style={{ marginBottom: 0 }}>
+          {Object.entries(CHAINS).map(([key, c]) => (
+            <button
+              key={key}
+              className={`pd-chain-tab ${
+                selectedChain === key ? "pd-chain-tab-active" : ""
+              }`}
+              onClick={() => setSelectedChain(key)}
+            >
+              <span className="pd-chain-dot" style={{ background: c.badgeColor }}>
+                {c.badgeLetter}
+              </span>
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="sm-refresh-row">
+          {lastUpdated && (
+            <span className="sm-last-updated">
+              Updated {lastUpdated.toLocaleTimeString()}
             </span>
-            {c.label}
+          )}
+          <button
+            className="sm-refresh-btn"
+            onClick={() => {
+              setLoading(true);
+              (selectedChain === "solana" ? getSmartMoney() : getRobinhoodSmartMoney())
+                .then((data) => {
+                  setFeed(data.results || []);
+                  setLastUpdated(new Date());
+                  setError("");
+                })
+                .catch(() => setError("Unable to load Smart Money feed."))
+                .finally(() => setLoading(false));
+            }}
+          >
+            ↻ Refresh
           </button>
-        ))}
+        </div>
       </div>
 
       {error && <div className="sm-error">{error}</div>}

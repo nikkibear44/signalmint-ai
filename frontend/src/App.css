@@ -1957,3 +1957,40 @@ footer {
   margin-bottom: 6px;
   font-weight: 700;
 }
+
+/* ---------- SMART MONEY: REFRESH ROW ---------- */
+
+.sm-tabs-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.sm-refresh-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sm-last-updated {
+  color: #666;
+  font-size: 12px;
+}
+
+.sm-refresh-btn {
+  background: #111;
+  border: 1px solid #222;
+  color: #999;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+.sm-refresh-btn:hover {
+  border-color: #2ee6b8;
+  color: #2ee6b8;
+}
