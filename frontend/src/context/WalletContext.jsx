@@ -3,19 +3,19 @@ import { createContext, useContext, useState, useCallback } from "react";
 const WalletContext = createContext(null);
 
 export function WalletProvider({ children }) {
-  const [address, setAddress] = useState(null); // Solana address
-  const [evmAddress, setEvmAddress] = useState(null); // EVM address (Base, Robinhood Chain, X Layer, etc.)
+  const [address, setAddress] = useState(null); // Solana address (Phantom)
+  const [evmAddress, setEvmAddress] = useState(null); // EVM address (OKX Wallet)
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState("");
 
   const connect = useCallback(async () => {
     setError("");
 
-    const provider = window?.okxwallet?.solana;
+    const provider = window?.phantom?.solana ?? window?.solana;
 
-    if (!provider) {
+    if (!provider || !provider.isPhantom) {
       setError(
-        "OKX Wallet not detected. Install the OKX Wallet browser extension."
+        "Phantom Wallet not detected. Install the Phantom browser extension."
       );
       return;
     }
@@ -69,7 +69,7 @@ export function WalletProvider({ children }) {
 
   const disconnect = useCallback(async () => {
     try {
-      const provider = window?.okxwallet?.solana;
+      const provider = window?.phantom?.solana ?? window?.solana;
       if (provider?.disconnect) {
         await provider.disconnect();
       }

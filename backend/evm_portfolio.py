@@ -15,8 +15,7 @@ if COINGECKO_API_KEY:
 
 
 # -------------------------------------------------------
-# Chain configs — add more EVM chains here later
-# (Robinhood Chain, X Layer, etc.) by adding a new entry.
+# Chain configs
 # -------------------------------------------------------
 
 CHAINS = {
@@ -26,8 +25,12 @@ CHAINS = {
         "native_symbol": "ETH",
         "coingecko_id": "ethereum",
         "chain_id": 4663,
-        "badge_color": "#00C805",  # Robinhood brand green
+        "badge_color": "#00C805",
         "badge_letter": "R",
+        # Blockscout explorer instance for this chain - free, no API key
+        "explorer_url": "https://robinhoodchain.blockscout.com",
+        # DexScreener's chain slug for this network
+        "dexscreener_chain": "robinhood",
     },
     "stable": {
         "name": "Stable Mainnet",
@@ -35,8 +38,11 @@ CHAINS = {
         "native_symbol": "USDT0",
         "coingecko_id": "usdt0",
         "chain_id": 988,
-        "badge_color": "#26A17B",  # Tether/stablecoin green
+        "badge_color": "#26A17B",
         "badge_letter": "S",
+        # No free explorer API available yet for this chain
+        "explorer_url": None,
+        "dexscreener_chain": "stable",
     },
 }
 
@@ -79,7 +85,7 @@ def _get_native_balance(rpc_url, address):
         return 0
 
 
-def _get_token_price_usd(coingecko_id):
+def _get_native_price_usd(coingecko_id):
     try:
         response = requests.get(
             "https://api.coingecko.com/api/v3/simple/price",
@@ -97,6 +103,83 @@ def _get_token_price_usd(coingecko_id):
         return 0
 
 
+def _get_erc20_holdings(explorer_url, address):
+    """
+    Fetch ERC-20 token balances for an address via a self-hosted
+    Blockscout instance's free public API (no key needed).
+    """
+
+    try:
+        response = requests.get(
+            f"{explorer_url}/api/v2/addresses/{address}/tokens",
+            params={"type": "ERC-20"},
+            timeout=15,
+        )
+        response.raise_for_status()
+
+        data = response.json()
+        items = data.get("items", [])
+
+        holdings = []
+
+        for item in items:
+            token = item.get("token", {})
+            decimals = int(token.get("decimals") or 18)
+            raw_value = item.get("value", "0")
+
+            try:
+                amount = int(raw_value) / (10 ** decimals)
+            except Exception:
+                continue
+
+            if amount <= 0:
+                continue
+
+            holdings.append(
+                {
+                    "symbol": token.get("symbol", "?"),
+                    "name": token.get("name", token.get("symbol", "?")),
+                    "contract_address": token.get("address"),
+                    "amount": amount,
+                }
+            )
+
+        return holdings
+
+    except Exception as e:
+        print(f"[EVM Portfolio] Blockscout token fetch failed: {e}")
+        return []
+
+
+def _get_dexscreener_price(chain_slug, contract_address):
+    try:
+        response = requests.get(
+            f"https://api.dexscreener.com/latest/dex/tokens/{contract_address}",
+            timeout=10,
+        )
+        response.raise_for_status()
+
+        data = response.json()
+        pairs = data.get("pairs") or []
+
+        # Only keep pairs actually on this chain
+        chain_pairs = [p for p in pairs if p.get("chainId") == chain_slug]
+
+        if not chain_pairs:
+            return 0
+
+        best = max(
+            chain_pairs,
+            key=lambda p: float((p.get("liquidity") or {}).get("usd") or 0),
+        )
+
+        return float(best.get("priceUsd") or 0)
+
+    except Exception as e:
+        print(f"[EVM Portfolio] DexScreener price failed for {contract_address}: {e}")
+        return 0
+
+
 def get_evm_portfolio(chain_key, address):
     chain = CHAINS.get(chain_key)
 
@@ -106,37 +189,83 @@ def get_evm_portfolio(chain_key, address):
             "message": f"Unsupported chain: {chain_key}",
         }
 
-    native_amount = _get_native_balance(chain["rpc_url"], address)
-    price = _get_token_price_usd(chain["coingecko_id"])
-    value_usd = round(native_amount * price, 2)
-
     holdings = []
+    total_value = 0
+
+    # Native token
+    native_amount = _get_native_balance(chain["rpc_url"], address)
+    native_price = _get_native_price_usd(chain["coingecko_id"])
+    native_value = round(native_amount * native_price, 2)
 
     if native_amount > 0:
         holdings.append(
             {
                 "symbol": chain["native_symbol"],
+                "name": chain["native_symbol"],
                 "amount": native_amount,
-                "price_usd": price,
-                "value_usd": value_usd,
-                "allocation_pct": 100 if value_usd > 0 else 0,
+                "price_usd": native_price,
+                "value_usd": native_value,
             }
+        )
+        total_value += native_value
+
+    # ERC-20 tokens (only for chains with a free explorer API set up)
+    erc20_supported = bool(chain.get("explorer_url"))
+
+    if erc20_supported:
+        tokens = _get_erc20_holdings(chain["explorer_url"], address)
+
+        for token in tokens:
+            price = _get_dexscreener_price(
+                chain["dexscreener_chain"], token["contract_address"]
+            )
+            value_usd = round(token["amount"] * price, 2)
+
+            # Skip dust under $1 (only when we have a real nonzero price)
+            if price > 0 and value_usd < 1:
+                continue
+
+            holdings.append(
+                {
+                    "symbol": token["symbol"],
+                    "name": token["name"],
+                    "amount": token["amount"],
+                    "price_usd": price,
+                    "value_usd": value_usd,
+                    "price_unavailable": price == 0,
+                }
+            )
+            total_value += value_usd
+
+    # Allocation percentages
+    for h in holdings:
+        h["allocation_pct"] = (
+            round((h["value_usd"] / total_value) * 100, 2)
+            if total_value > 0
+            else 0
         )
 
     ai_narrative = None
 
     if holdings:
         try:
+            lines = [
+                f"{h['symbol']} (${h['value_usd']}, {h['allocation_pct']}%)"
+                for h in holdings
+            ]
             summary_text = (
-                f"Wallet on {chain['name']} holds "
-                f"{native_amount:.6f} {chain['native_symbol']} "
-                f"worth ${value_usd}. This is the only asset on this chain "
-                f"detected so far (ERC-20 token scanning not yet supported "
-                f"for this chain)."
+                f"Wallet on {chain['name']} holds {len(holdings)} asset(s) "
+                f"worth ${round(total_value, 2)} total: " + ", ".join(lines) + "."
             )
             ai_narrative = portfolio_review(summary_text)
         except Exception as e:
             print(f"[EVM Portfolio] AI narrative failed: {e}")
+
+    note = (
+        None
+        if erc20_supported
+        else "Currently shows native token balance only. ERC-20 token support coming soon for this chain."
+    )
 
     return {
         "success": True,
@@ -146,13 +275,10 @@ def get_evm_portfolio(chain_key, address):
             "badge_color": chain["badge_color"],
             "badge_letter": chain["badge_letter"],
             "address": address,
-            "total_value_usd": value_usd,
+            "total_value_usd": round(total_value, 2),
             "holdings_count": len(holdings),
             "holdings": holdings,
             "ai_narrative": ai_narrative,
-            "note": (
-                "Currently shows native token balance only. "
-                "ERC-20 token support coming soon."
-            ),
+            "note": note,
         },
     }

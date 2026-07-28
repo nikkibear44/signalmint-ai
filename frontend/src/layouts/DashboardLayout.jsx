@@ -40,7 +40,16 @@ function DashboardLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(getInitialCollapsed);
-  const { address, connecting, error, connect, disconnect } = useWallet();
+  const {
+    address,
+    connecting,
+    error,
+    connect,
+    disconnect,
+    evmAddress,
+    connectEvm,
+    disconnectEvm,
+  } = useWallet();
 
   const isToolPage = location.pathname !== "/dashboard";
 
@@ -78,8 +87,10 @@ function DashboardLayout({ children }) {
           </button>
         </div>
 
-        {/* Wallet connect */}
+        {/* Wallet connect - Solana (Phantom) */}
         <div className="wallet-box">
+          {!collapsed && <div className="wallet-chain-label">Solana</div>}
+
           {address ? (
             <button
               className="wallet-btn wallet-connected"
@@ -100,7 +111,37 @@ function DashboardLayout({ children }) {
               ) : collapsed ? (
                 <Wallet size={16} />
               ) : (
-                "Connect Wallet"
+                "Connect Phantom"
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Wallet connect - EVM (OKX Wallet) */}
+        <div className="wallet-box">
+          {!collapsed && <div className="wallet-chain-label">EVM (OKX)</div>}
+
+          {evmAddress ? (
+            <button
+              className="wallet-btn wallet-connected"
+              onClick={disconnectEvm}
+              title="Click to disconnect"
+            >
+              <span className="wallet-dot" />
+              {!collapsed && shortAddress(evmAddress)}
+            </button>
+          ) : (
+            <button
+              className="wallet-btn"
+              onClick={connectEvm}
+              disabled={connecting}
+            >
+              {connecting ? (
+                "Connecting..."
+              ) : collapsed ? (
+                <Wallet size={16} />
+              ) : (
+                "Connect OKX Wallet"
               )}
             </button>
           )}
