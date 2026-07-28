@@ -81,3 +81,13 @@ export async function getWalletPortfolio(address) {
 
   return response.json();
 }
+
+export async function getEvmPortfolio(chain, address) {
+  const response = await fetch(`${API_BASE}/evm-portfolio/${chain}/${address}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch EVM wallet portfolio.");
+  }
+
+  return response.json();
+}

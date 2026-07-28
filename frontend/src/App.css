@@ -1900,3 +1900,49 @@ footer {
   margin-bottom: 14px;
   font-size: 15px;
 }
+
+/* ---------- PORTFOLIO DOCTOR: CHAIN TABS ---------- */
+
+.pd-chain-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.pd-chain-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #111;
+  border: 1px solid #222;
+  color: #999;
+  border-radius: 999px;
+  padding: 8px 16px 8px 8px;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.pd-chain-tab:hover {
+  border-color: #2ee6b8;
+  color: #fff;
+}
+
+.pd-chain-tab-active {
+  border-color: #2ee6b8;
+  color: #fff;
+  background: #161616;
+}
+
+.pd-chain-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #08110d;
+  flex-shrink: 0;
+}
