@@ -1946,3 +1946,14 @@ footer {
   color: #08110d;
   flex-shrink: 0;
 }
+
+/* ---------- SIDEBAR: DUAL WALLET LABELS ---------- */
+
+.wallet-chain-label {
+  color: #666;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-weight: 700;
+}

@@ -100,14 +100,14 @@ function PortfolioDoctor() {
           <p>
             {isEvmChain
               ? "Connect your OKX Wallet's EVM account to see a live breakdown of your holdings on this chain."
-              : "Connect your OKX Wallet to see a live breakdown of your token holdings and diversification risk."}
+              : "Connect your Phantom Wallet to see a live breakdown of your token holdings and diversification risk."}
           </p>
           <button
             className="pd-connect-btn"
             onClick={isEvmChain ? connectEvm : connect}
             disabled={connecting}
           >
-            {connecting ? "Connecting..." : "Connect Wallet"}
+            {connecting ? "Connecting..." : `Connect ${isEvmChain ? "OKX Wallet" : "Phantom"}`}
           </button>
         </div>
       )}
