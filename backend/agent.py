@@ -426,7 +426,14 @@ Rules:
 - Keep every value concise.
 - Base the response only on the supplied token information.
 - If price, market cap, or 24h change is "N/A", explicitly account for that limited data in your summary rather than inventing numbers.
-- For entry_zone, take_profit, stop_loss, holding_period, and risk_reward: if there is not enough information to determine a value, write exactly the string "N/A" for that field. Never write "undefined", "null", "unknown", or leave a field blank.
+- For entry_zone, take_profit, stop_loss, holding_period, and risk_reward: if you do not have a real price to calculate specific dollar figures, do NOT write "N/A" and do NOT invent numbers. Instead give short, honest QUALITATIVE guidance for that field, for example:
+  - entry_zone: "Wait for price discovery" or "Accumulate only on confirmed volume"
+  - take_profit: "Reassess once price data is available"
+  - stop_loss: "Exit if project shows signs of abandonment"
+  - holding_period: "Long-term, pending market listing"
+  - risk_reward: "Unquantifiable without price data"
+- Never write "undefined", "null", "unknown", or leave a field blank.
+- Only use specific dollar figures (e.g. "$0.05-$0.06") when a real current price was actually supplied above. Never fabricate a price-based figure when price is "N/A".
 """
 
     response = ask_ai(prompt)
