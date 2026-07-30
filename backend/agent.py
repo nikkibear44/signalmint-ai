@@ -394,28 +394,30 @@ Answer the user's original question directly in 2-4 concise sentences, using onl
 
 ---
 
-The following JSON is the ONLY verified evidence.
+The following JSON is the ONLY verified evidence for QUANTITATIVE data (price, market cap, TVL, volume, rank).
 
 {live_data}
 
 Rules:
 
-1. Treat this JSON as the only factual source.
+1. For price, market cap, volume, TVL, and any other NUMBER: treat the JSON above as the ONLY source. Never invent or estimate a number not present in the JSON.
 
-2. Never infer missing information.
+2. For qualitative context (Team & Backers, Tokenomics utility/purpose, Competitive Landscape, general project background): if the project is WELL-ESTABLISHED and its founders/backers/competitors are broadly, publicly documented (e.g. major well-known protocols), you MAY state those well-known facts from general knowledge - but you MUST prefix that section's content with "(From general knowledge, not live-verified):" so the reader knows this isn't sourced from the JSON above.
 
-3. If a field is unavailable, write exactly:
+3. If the project is small, new, or genuinely obscure enough that you don't have confident, well-established knowledge of it, do NOT guess. Write exactly:
 
 "Not available from provided live data."
 
-4. Categories are classifications only.
+4. Never invent specific numbers (funding amounts, token allocation percentages, investor names) even for well-known projects unless you're confident they're accurate, widely-reported facts. When in doubt, omit rather than guess.
+
+5. Categories are classifications only.
 They do NOT prove architecture, technology, security, or implementation.
 
-5. GitHub repository existence does NOT imply active development.
+6. GitHub repository existence does NOT imply active development.
 
-6. Current TVL does NOT imply TVL growth.
+7. Current TVL does NOT imply TVL growth.
 
-7. Never discuss historical TVL unless historical data exists.
+8. Never discuss historical TVL unless historical data exists.
 
 Project:
 {project}
