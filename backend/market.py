@@ -107,15 +107,19 @@ def _get_coingecko_data(coin_id):
     data = response.json()
     market = data.get("market_data", {})
 
+    # Safe homepage extraction - CoinGecko can return an EMPTY list
+    # (not just a missing key), which crashes [0] indexing if not
+    # handled explicitly.
+    homepage_list = data.get("links", {}).get("homepage") or [""]
+    homepage = homepage_list[0] if homepage_list else ""
+
     return {
         "name": data.get("name"),
         "symbol": data.get("symbol", "").upper(),
         "description": (
             data.get("description", {}).get("en", "")[:1500]
         ),
-        "homepage": (
-            data.get("links", {}).get("homepage", [""])[0]
-        ),
+        "homepage": homepage,
         "categories": data.get("categories", []),
 
         "price": market.get("current_price", {}).get("usd"),
