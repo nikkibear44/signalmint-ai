@@ -37,6 +37,21 @@ def collect_project_data(project):
             "verified": True
         },
 
+        "total_supply": {
+            "value": cg.get("total_supply") if cg else None,
+            "verified": True
+        },
+
+        "circulating_supply": {
+            "value": cg.get("circulating_supply") if cg else None,
+            "verified": True
+        },
+
+        "max_supply": {
+            "value": cg.get("max_supply") if cg else None,
+            "verified": True
+        },
+
         "tvl": {
             "current": dl.get("tvl") if dl else None,
             "historical_available": False

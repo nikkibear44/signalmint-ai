@@ -127,6 +127,10 @@ def _get_coingecko_data(coin_id):
         "volume": market.get("total_volume", {}).get("usd"),
         "change_24h": market.get("price_change_percentage_24h"),
 
+        "total_supply": market.get("total_supply"),
+        "circulating_supply": market.get("circulating_supply"),
+        "max_supply": market.get("max_supply"),
+
         "genesis_date": data.get("genesis_date"),
         "coingecko_rank": data.get("market_cap_rank"),
         "sentiment_up": data.get("sentiment_votes_up_percentage"),
