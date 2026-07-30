@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { getDueDiligence } from "../services/api";
 
@@ -86,7 +87,7 @@ function TokenIntelligence() {
             📄 Due Diligence Report — {lastProject}
           </div>
           <div className="ai-report">
-            <ReactMarkdown>{report}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{report}</ReactMarkdown>
           </div>
         </div>
       )}

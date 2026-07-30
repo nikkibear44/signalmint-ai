@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { useWallet } from "../context/WalletContext";
 import { getWalletPortfolio, getEvmPortfolio } from "../services/api";
@@ -192,7 +193,7 @@ function PortfolioDoctor() {
                 📝 AI Portfolio Advice
               </div>
               <div className="ai-report">
-                <ReactMarkdown>{portfolio.ai_narrative}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{portfolio.ai_narrative}</ReactMarkdown>
               </div>
             </div>
           )}

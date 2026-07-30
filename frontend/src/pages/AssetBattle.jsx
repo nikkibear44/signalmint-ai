@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { getCompareTokens } from "../services/api";
 
@@ -96,7 +97,7 @@ function AssetBattle() {
             ⚔️ {lastPair.token1} vs {lastPair.token2}
           </div>
           <div className="ai-report">
-            <ReactMarkdown>{report}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{report}</ReactMarkdown>
           </div>
         </div>
       )}

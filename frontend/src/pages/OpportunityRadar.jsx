@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
 import {
   analyzeToken,
@@ -961,7 +962,7 @@ function OpportunityRadar() {
                 className="ai-report"
                 style={{ fontSize: "15px", marginTop: "20px" }}
               >
-                <ReactMarkdown>{report}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{report}</ReactMarkdown>
               </div>
             )}
           </div>

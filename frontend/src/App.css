@@ -2657,3 +2657,35 @@ footer {
   padding-bottom: 16px;
   border-bottom: 1px solid #222;
 }
+
+/* ---------- AI REPORT: TABLES (from remark-gfm) ---------- */
+
+.ai-report table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0 24px;
+  font-size: 14px;
+}
+
+.ai-report th {
+  text-align: left;
+  color: #2ee6b8;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-bottom: 2px solid #222;
+  background: #161616;
+}
+
+.ai-report td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #1a1a1a;
+  color: #ccc;
+}
+
+.ai-report tr:last-child td {
+  border-bottom: none;
+}
+
+.ai-report table a {
+  color: #2ee6b8;
+}
