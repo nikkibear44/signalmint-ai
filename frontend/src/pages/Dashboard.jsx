@@ -39,7 +39,7 @@ const tools = [
     icon: Swords,
     title: "Asset Battle",
     description: "Compare two crypto assets side by side with AI.",
-    path: null,
+    path: "/dashboard/asset-battle",
   },
 ];
 

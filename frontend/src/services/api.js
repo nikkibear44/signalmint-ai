@@ -123,3 +123,22 @@ export async function getDueDiligence(project) {
 
   return response.json();
 }
+
+export async function getCompareTokens(token1, token2) {
+  const response = await fetch(`${API_BASE}/compare`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      token1,
+      token2,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to generate comparison.");
+  }
+
+  return response.json();
+}

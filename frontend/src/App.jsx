@@ -9,6 +9,7 @@ import AlphaScanner from "./pages/AlphaScanner";
 import SmartMoneyPage from "./pages/SmartMoney";
 import PortfolioDoctor from "./pages/PortfolioDoctor";
 import TokenIntelligence from "./pages/TokenIntelligence";
+import AssetBattle from "./pages/AssetBattle";
 
 function App() {
   return (
@@ -40,6 +41,11 @@ function App() {
       <Route
         path="/dashboard/token-intelligence"
         element={<TokenIntelligence />}
+      />
+
+      <Route
+        path="/dashboard/asset-battle"
+        element={<AssetBattle />}
       />
     </Routes>
   );

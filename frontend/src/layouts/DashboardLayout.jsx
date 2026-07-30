@@ -20,7 +20,7 @@ const navItems = [
   { label: "Smart Money", icon: Waves, path: "/dashboard/smart-money" },
   { label: "Portfolio Doctor", icon: Briefcase, path: "/dashboard/portfolio-doctor" },
   { label: "Token Intelligence", icon: Search, path: "/dashboard/token-intelligence" },
-  { label: "Asset Battle", icon: Swords, path: null },
+  { label: "Asset Battle", icon: Swords, path: "/dashboard/asset-battle" },
 ];
 
 function getInitialCollapsed() {

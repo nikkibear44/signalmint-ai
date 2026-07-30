@@ -2528,3 +2528,132 @@ footer {
   padding-bottom: 16px;
   border-bottom: 1px solid #222;
 }
+
+/* ---------- ASSET BATTLE ---------- */
+
+.ab-header {
+  margin-bottom: 28px;
+}
+
+.ab-header h1 {
+  margin-bottom: 10px;
+}
+
+.ab-header p {
+  color: #999;
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 640px;
+}
+
+.ab-search-card {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.ab-search-card h3 {
+  margin-bottom: 18px;
+}
+
+.ab-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ab-search-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: white;
+  font-size: 15px;
+}
+
+.ab-vs {
+  color: #2ee6b8;
+  font-weight: 800;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.ab-compare-btn {
+  background: #2ee6b8;
+  color: #101820;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 26px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: 0.2s;
+}
+
+.ab-compare-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.ab-compare-btn:disabled {
+  background: #444;
+  color: #999;
+}
+
+.ab-error {
+  color: #ff6666;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.ab-loading-card {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.ab-loading-skeleton {
+  height: 16px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #161616 0%, #1e1e1e 50%, #161616 100%);
+  background-size: 200% 100%;
+  animation: ab-shimmer 1.4s infinite;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+@keyframes ab-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.ab-loading-text {
+  color: #888;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+.ab-report-card {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.ab-report-label {
+  color: #2ee6b8;
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #222;
+}
