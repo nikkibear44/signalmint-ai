@@ -141,3 +141,6 @@ OKX.AI Genesis Hackathon — demonstrating how an agent-native economy works in 
 
 support me X 
 
+https://x.com/hizqilsky
+https://x.com/signalmint_ai/status/2081711659446669561
+
