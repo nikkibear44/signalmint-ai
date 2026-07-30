@@ -219,10 +219,10 @@ def due_diligence_report(data: DueDiligenceRequest):
 # Due Diligence (paid, x402)
 # ===========================
 
-def _x402_challenge_response(resource_url: str, status_code: int = 402, error: str = None) -> JSONResponse:
+def _x402_challenge_response(resource_url: str, description: str, status_code: int = 402, error: str = None) -> JSONResponse:
     payload = x402_payment.build_402_payload(
         resource_url=resource_url,
-        description="AI-generated crypto project due diligence report",
+        description=description,
     )
 
     body = dict(payload)
@@ -241,16 +241,17 @@ def due_diligence_paid(data: DueDiligenceRequest, request: Request):
         return {"error": "Project cannot be empty."}
 
     resource_url = str(request.url)
+    description = "AI-generated crypto project due diligence report"
 
     payment_header = request.headers.get("PAYMENT-SIGNATURE") or request.headers.get("X-PAYMENT")
 
     if not payment_header:
-        return _x402_challenge_response(resource_url)
+        return _x402_challenge_response(resource_url, description)
 
     try:
         settlement = x402_payment.verify_and_settle(payment_header)
     except x402_payment.PaymentVerificationError as e:
-        return _x402_challenge_response(resource_url, error=str(e))
+        return _x402_challenge_response(resource_url, description, error=str(e))
 
     result = due_diligence(data.project)
 
@@ -258,6 +259,45 @@ def due_diligence_paid(data: DueDiligenceRequest, request: Request):
     response.update(
         {
             "project": data.project,
+            "report": result,
+        }
+    )
+
+    resp = JSONResponse(content=response)
+    resp.headers["PAYMENT-RESPONSE"] = x402_payment.encode_header(settlement)
+    return resp
+
+
+# ===========================
+# Compare Tokens (paid, x402)
+# ===========================
+
+@app.post("/x402/compare")
+def compare_paid(data: CompareRequest, request: Request):
+
+    if not data.token1.strip() or not data.token2.strip():
+        return {"error": "Both token1 and token2 are required."}
+
+    resource_url = str(request.url)
+    description = "AI-generated crypto token comparison report"
+
+    payment_header = request.headers.get("PAYMENT-SIGNATURE") or request.headers.get("X-PAYMENT")
+
+    if not payment_header:
+        return _x402_challenge_response(resource_url, description)
+
+    try:
+        settlement = x402_payment.verify_and_settle(payment_header)
+    except x402_payment.PaymentVerificationError as e:
+        return _x402_challenge_response(resource_url, description, error=str(e))
+
+    result = compare_tokens(data.token1, data.token2)
+
+    response = response_template("x402/compare")
+    response.update(
+        {
+            "token1": data.token1,
+            "token2": data.token2,
             "report": result,
         }
     )
