@@ -460,13 +460,12 @@ Rules:
 - Current TVL does not imply TVL growth or decline.
 - Never infer historical values from the current TVL.
 - If only the current TVL is available, state only the current TVL.
-- Use the provided Live Project Data as the primary source of truth.
-- Never invent or assume information.
-- If a field is missing from the Live Project Data, explicitly state:
-  "Not available from provided live data."
+- Use the provided Live Project Data as the primary source of truth for all NUMBERS (price, market cap, TVL, volume, rank).
+- For Team & Backers, Tokenomics, and Competitive Landscape specifically: if this is a well-established, publicly documented project, you may state well-known facts (founders, major investors, competitors, token utility) from general knowledge, prefixed with "(From general knowledge, not live-verified):" - replace the "Not available" statement entirely with this content rather than showing both.
+- For small, new, or genuinely obscure projects where you don't have confident public knowledge, state exactly: "Not available from provided live data." Do not guess or hedge with partial invented details.
+- Never invent a SPECIFIC number (funding amount, token allocation percentage, exact user count) even for well-known projects unless it's a widely-reported, confident fact.
 - Do not claim that something does not exist unless it is explicitly supported by the Live Project Data.
 - Clearly distinguish factual information from analysis or opinion.
 - Use live metrics (price, market cap, TVL, volume, GitHub, Twitter, website, etc.) whenever they are available.
 - Keep the report objective and evidence-based.
-- Never fabricate investors, partnerships, audits, funding rounds, user counts, or security incidents.
 """
