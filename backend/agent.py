@@ -371,14 +371,23 @@ Rules:
 def _get_recent_whale_activity(symbol):
     """
     Cross-references the analyzed token against SignalMint's existing
-    Smart Money whale feed. Wrapped in a strict try/except with no
-    hard dependency - if this is slow or fails, due_diligence()
-    still returns the full report normally without it.
+    Smart Money whale feeds (Solana + Robinhood Chain). Each chain is
+    wrapped in its own strict try/except with no hard dependency -
+    if either is slow or fails, due_diligence() still returns the
+    full report normally without that piece.
     """
 
     if not symbol:
         return None
 
+    combined = {
+        "buy_wallets": 0,
+        "sell_wallets": 0,
+        "total_buy_value_usd": 0,
+        "chains": [],
+    }
+
+    # Solana
     try:
         from smart_money import get_smart_money
 
@@ -389,25 +398,51 @@ def _get_recent_whale_activity(symbol):
             if (tx.get("symbol") or "").upper() == symbol.upper()
         ]
 
-        if not matches:
-            return None
+        if matches:
+            buys = [tx for tx in matches if tx.get("side") == "BUY"]
+            sells = [tx for tx in matches if tx.get("side") == "SELL"]
 
-        buys = [tx for tx in matches if tx.get("side") == "BUY"]
-        sells = [tx for tx in matches if tx.get("side") == "SELL"]
-
-        buy_wallets = len(set(tx.get("wallet") for tx in buys))
-        sell_wallets = len(set(tx.get("wallet") for tx in sells))
-        total_buy_usd = sum(tx.get("value_usd") or 0 for tx in buys)
-
-        return {
-            "buy_wallets": buy_wallets,
-            "sell_wallets": sell_wallets,
-            "total_buy_value_usd": round(total_buy_usd, 2),
-        }
+            combined["buy_wallets"] += len(set(tx.get("wallet") for tx in buys))
+            combined["sell_wallets"] += len(set(tx.get("wallet") for tx in sells))
+            combined["total_buy_value_usd"] += sum(
+                tx.get("value_usd") or 0 for tx in buys
+            )
+            combined["chains"].append("Solana")
 
     except Exception as e:
-        print(f"[Due Diligence] Whale cross-check skipped: {e}")
+        print(f"[Due Diligence] Solana whale cross-check skipped: {e}")
+
+    # Robinhood Chain
+    try:
+        from robinhood_smart_money import get_robinhood_smart_money
+
+        feed = get_robinhood_smart_money()
+
+        matches = [
+            tx for tx in feed
+            if (tx.get("symbol") or "").upper() == symbol.upper()
+        ]
+
+        if matches:
+            buys = [tx for tx in matches if tx.get("side") == "BUY"]
+            sells = [tx for tx in matches if tx.get("side") == "SELL"]
+
+            combined["buy_wallets"] += len(set(tx.get("wallet") for tx in buys))
+            combined["sell_wallets"] += len(set(tx.get("wallet") for tx in sells))
+            combined["total_buy_value_usd"] += sum(
+                tx.get("value_usd") or 0 for tx in buys
+            )
+            combined["chains"].append("Robinhood Chain")
+
+    except Exception as e:
+        print(f"[Due Diligence] Robinhood Chain whale cross-check skipped: {e}")
+
+    if not combined["chains"]:
         return None
+
+    combined["total_buy_value_usd"] = round(combined["total_buy_value_usd"], 2)
+
+    return combined
 
 
 def due_diligence(user_query):
@@ -442,7 +477,7 @@ Before the full report, add this section FIRST, above "# Executive Summary":
 
 Answer the user's original question directly in 2-4 concise sentences, using only the verified JSON data below. If their question can't be fully answered from the available data, say so explicitly rather than guessing.
 
-If the JSON below includes a "tracked_whale_activity" field, mention it naturally in the Adoption & Traction section as a real, verified signal (e.g. "X tracked whale wallets bought this token recently, totaling $Y" or "X wallets sold, indicating distribution"). Do not mention it if that field is absent.
+If the JSON below includes a "tracked_whale_activity" field, mention it naturally in the Adoption & Traction section as a real, verified signal - include which chain(s) it was tracked on (from the "chains" field), e.g. "X tracked whale wallets bought this token on [chain], totaling $Y." Do not mention it if that field is absent.
 
 ---
 
