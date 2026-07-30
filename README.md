@@ -4,7 +4,7 @@ One intelligence engine. Six AI-powered crypto tools. Built for the OKX AI Genes
 
 SignalMint AI turns live crypto market data into actionable intelligence. Instead of disconnected tools, every feature shares one underlying intelligence engine — the same market data, AI reasoning, and analysis pipeline power everything you see.
 
-🔗 Live demo: https://signalmint-ai.vercel.app 🆔 OKX.AI Agent ID: #9708
+🔗 Live demo: https://signalmint-ai.vercel.app 🆔 OKX.AI Agent ID: #9708 (still review)
 
 Note: The backend runs on a free Render instance, which spins down after inactivity. The first request after idle time may take 30-50 seconds to respond while it wakes up — subsequent requests are fast.
 
