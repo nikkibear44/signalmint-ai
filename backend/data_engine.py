@@ -37,6 +37,32 @@ def collect_project_data(project):
             "verified": True
         },
 
+        "change_7d": {
+            "value": cg.get("change_7d") if cg else None,
+            "verified": True
+        },
+
+        "change_30d": {
+            "value": cg.get("change_30d") if cg else None,
+            "verified": True
+        },
+
+        "change_1y": {
+            "value": cg.get("change_1y") if cg else None,
+            "verified": True
+        },
+
+        "ath": {
+            "value": cg.get("ath") if cg else None,
+            "ath_change_percentage": cg.get("ath_change_percentage") if cg else None,
+            "verified": True
+        },
+
+        "atl": {
+            "value": cg.get("atl") if cg else None,
+            "verified": True
+        },
+
         "total_supply": {
             "value": cg.get("total_supply") if cg else None,
             "verified": True

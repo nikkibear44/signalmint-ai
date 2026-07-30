@@ -14,6 +14,9 @@ HEADERS = {
 if COINGECKO_API_KEY:
     HEADERS["x-cg-demo-api-key"] = COINGECKO_API_KEY
 
+HELIUS_API_KEY = os.getenv("HELIUS_API_KEY")
+SOLANA_RPC_URL = f"https://mainnet.helius-rpc.com/?api-key={HELIUS_API_KEY}"
+
 
 def _fetch_with_retry(url, params=None, retries=2, timeout=15):
     last_error = None
@@ -126,6 +129,13 @@ def _get_coingecko_data(coin_id):
         "market_cap": market.get("market_cap", {}).get("usd"),
         "volume": market.get("total_volume", {}).get("usd"),
         "change_24h": market.get("price_change_percentage_24h"),
+        "change_7d": market.get("price_change_percentage_7d"),
+        "change_30d": market.get("price_change_percentage_30d"),
+        "change_1y": market.get("price_change_percentage_1y"),
+
+        "ath": market.get("ath", {}).get("usd"),
+        "ath_change_percentage": market.get("ath_change_percentage", {}).get("usd"),
+        "atl": market.get("atl", {}).get("usd"),
 
         "total_supply": market.get("total_supply"),
         "circulating_supply": market.get("circulating_supply"),
@@ -138,6 +148,40 @@ def _get_coingecko_data(coin_id):
 
         "source": "coingecko",
     }
+
+
+def _get_solana_onchain_supply(mint_address):
+    """
+    Reads a token's total supply directly from its on-chain mint
+    account. Fully verified, works for ANY SPL token regardless of
+    whether it has a team, website, or CoinGecko listing - including
+    anonymous pump.fun-style memecoins.
+    """
+
+    try:
+        response = requests.post(
+            SOLANA_RPC_URL,
+            json={
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "getTokenSupply",
+                "params": [mint_address],
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+
+        result = response.json().get("result")
+
+        if not result:
+            return None
+
+        ui_amount = result.get("value", {}).get("uiAmount")
+        return ui_amount
+
+    except Exception as e:
+        print(f"[Market] On-chain supply lookup failed for {mint_address}: {e}")
+        return None
 
 
 def _search_dexscreener(query):
@@ -170,6 +214,8 @@ def _search_dexscreener(query):
         )
 
         token = best.get("baseToken") or {}
+        chain_id = best.get("chainId")
+        mint_address = token.get("address")
 
         try:
             price = float(best.get("priceUsd") or 0)
@@ -179,6 +225,12 @@ def _search_dexscreener(query):
         volume = (best.get("volume") or {}).get("h24")
         change_24h = (best.get("priceChange") or {}).get("h24")
         fdv = best.get("fdv") or best.get("marketCap")
+
+        # For Solana tokens, try to get a real on-chain supply number -
+        # verified, works even for anonymous tokens with no team.
+        total_supply = None
+        if chain_id == "solana" and mint_address and HELIUS_API_KEY:
+            total_supply = _get_solana_onchain_supply(mint_address)
 
         return {
             "name": token.get("name") or query,
@@ -191,6 +243,10 @@ def _search_dexscreener(query):
             "market_cap": fdv,
             "volume": volume,
             "change_24h": change_24h,
+
+            "total_supply": total_supply,
+            "circulating_supply": None,
+            "max_supply": None,
 
             "genesis_date": None,
             "coingecko_rank": None,

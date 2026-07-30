@@ -431,6 +431,8 @@ Sections:
 
 ## Adoption & Traction
 
+If the JSON includes 7-day, 30-day, or 1-year price change data, or all-time-high/low figures, cite the notable ones here to give real historical context (e.g. "trading 40% below its all-time high" or "up 25% over the past 30 days"). If the JSON includes a "tracked_whale_activity" field, mention it here as a real, verified signal.
+
 ## Competitive Landscape
 
 ## Bull Case

@@ -368,6 +368,48 @@ Rules:
     return result
 
 
+def _get_recent_whale_activity(symbol):
+    """
+    Cross-references the analyzed token against SignalMint's existing
+    Smart Money whale feed. Wrapped in a strict try/except with no
+    hard dependency - if this is slow or fails, due_diligence()
+    still returns the full report normally without it.
+    """
+
+    if not symbol:
+        return None
+
+    try:
+        from smart_money import get_smart_money
+
+        feed = get_smart_money()
+
+        matches = [
+            tx for tx in feed
+            if (tx.get("symbol") or "").upper() == symbol.upper()
+        ]
+
+        if not matches:
+            return None
+
+        buys = [tx for tx in matches if tx.get("side") == "BUY"]
+        sells = [tx for tx in matches if tx.get("side") == "SELL"]
+
+        buy_wallets = len(set(tx.get("wallet") for tx in buys))
+        sell_wallets = len(set(tx.get("wallet") for tx in sells))
+        total_buy_usd = sum(tx.get("value_usd") or 0 for tx in buys)
+
+        return {
+            "buy_wallets": buy_wallets,
+            "sell_wallets": sell_wallets,
+            "total_buy_value_usd": round(total_buy_usd, 2),
+        }
+
+    except Exception as e:
+        print(f"[Due Diligence] Whale cross-check skipped: {e}")
+        return None
+
+
 def due_diligence(user_query):
     import json
 
@@ -377,6 +419,14 @@ def due_diligence(user_query):
         project = user_query  # fall back to raw input as a last resort
 
     project_data = collect_project_data(project)
+
+    # Cross-reference against tracked whale activity - real
+    # differentiated data most due diligence tools won't have.
+    symbol = project_data.get("verified", {}).get("symbol", {}).get("value")
+    whale_activity = _get_recent_whale_activity(symbol)
+
+    if whale_activity:
+        project_data["tracked_whale_activity"] = whale_activity
 
     live_data = json.dumps(project_data, indent=2)
 
@@ -391,6 +441,8 @@ Before the full report, add this section FIRST, above "# Executive Summary":
 # Direct Answer
 
 Answer the user's original question directly in 2-4 concise sentences, using only the verified JSON data below. If their question can't be fully answered from the available data, say so explicitly rather than guessing.
+
+If the JSON below includes a "tracked_whale_activity" field, mention it naturally in the Adoption & Traction section as a real, verified signal (e.g. "X tracked whale wallets bought this token recently, totaling $Y" or "X wallets sold, indicating distribution"). Do not mention it if that field is absent.
 
 ---
 
