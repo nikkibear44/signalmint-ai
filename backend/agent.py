@@ -30,6 +30,25 @@ def ask_ai(prompt):
     return response.choices[0].message.content
 
 
+def ask_ai_premium(prompt):
+    """
+    Used for paid tier requests only - a stronger model for genuinely
+    deeper reasoning, distinct from the free tier's ask_ai().
+    """
+
+    response = client.chat.completions.create(
+        model="gpt-4.1",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+    )
+
+    return response.choices[0].message.content
+
+
 def extract_section(report, section_name):
     headings = [
         "Executive Summary",
@@ -274,6 +293,63 @@ Stay neutral.
     return ask_ai(prompt)
 
 
+def compare_tokens_premium(token1, token2):
+    """
+    Paid tier version - uses a stronger model and adds genuinely
+    deeper comparative analysis sections not present in the free
+    comparison report.
+    """
+
+    market1 = get_market_data(token1.strip())
+    market2 = get_market_data(token2.strip())
+
+    prompt = f"""
+Compare these crypto assets. This is a PREMIUM comparison report.
+
+Token 1:
+{token1}
+
+Market Data:
+{market1}
+
+Token 2:
+{token2}
+
+Market Data:
+{market2}
+
+Return Markdown with:
+
+# Token Comparison
+
+## Overview
+
+## Market Comparison
+
+## Strengths
+
+## Weaknesses
+
+## Risk-Adjusted Comparison
+
+Compare the two assets specifically on a risk-adjusted basis - not just which has more upside, but which offers better return potential relative to its volatility and downside risk, using only the market data provided.
+
+## Scenario Analysis
+
+Reason through how each asset would likely perform under three different market conditions: a broad crypto bull market, a broad bear market, and a sideways/range-bound market. Base this on their market position and characteristics shown in the data, not invented price targets.
+
+## Portfolio Fit
+
+Discuss what type of investor or portfolio strategy each asset better suits (e.g. core holding vs. speculative satellite position, growth-oriented vs. value-oriented), based on their risk profile and market characteristics.
+
+## AI Verdict
+
+Stay neutral throughout. Never invent numbers not present in the supplied market data.
+"""
+
+    return ask_ai_premium(prompt)
+
+
 def narrative_detector(narrative):
 
     prompt = f"""
@@ -511,6 +587,94 @@ Project:
 """
 
     return ask_ai(prompt)
+
+
+def due_diligence_premium(user_query):
+    """
+    Paid tier version - uses a stronger model and adds genuinely
+    deeper analysis sections not present in the free report, rather
+    than just re-running the same prompt behind a paywall.
+    """
+
+    import json
+
+    project = extract_project_name(user_query)
+
+    if project.upper() == "UNKNOWN":
+        project = user_query
+
+    project_data = collect_project_data(project)
+
+    symbol = project_data.get("verified", {}).get("symbol", {}).get("value")
+    whale_activity = _get_recent_whale_activity(symbol)
+
+    if whale_activity:
+        project_data["tracked_whale_activity"] = whale_activity
+
+    live_data = json.dumps(project_data, indent=2)
+
+    prompt = f"""
+{DUE_DILIGENCE_PROMPT}
+
+This is a PREMIUM institutional report. In addition to every section already defined above, add these THREE extra sections at the end, after "AI Confidence":
+
+## Extended Competitive Analysis
+
+Identify 5 competitors (not 3), with deeper strategic analysis for each: not just strength/weakness, but what would need to change for this project to lose ground to that competitor specifically, and what structural moat (if any) protects against that.
+
+## Scenario Analysis
+
+Reason through three qualitative scenarios - Bull, Base, and Bear - describing what would realistically need to happen in each case (adoption trends, competitive dynamics, macro conditions). Do NOT give specific price targets or numbers not in the verified data - describe the conditions and trajectory qualitatively.
+
+## Institutional Considerations
+
+Discuss factors specifically relevant to institutional-size positions: liquidity depth relative to typical institutional order sizes (using the verified volume/market cap data), correlation considerations with broader crypto market movements, and portfolio role (e.g. core holding vs. satellite/speculative allocation) based on the project's risk profile established earlier in the report.
+
+The user's original question was:
+"{user_query}"
+
+Before the full report, add this section FIRST, above "# Executive Summary":
+
+# Direct Answer
+
+Answer the user's original question directly in 2-4 concise sentences, using only the verified JSON data below. If their question can't be fully answered from the available data, say so explicitly rather than guessing.
+
+If the JSON below includes a "tracked_whale_activity" field, mention it naturally in the Adoption & Traction section as a real, verified signal - include which chain(s) it was tracked on (from the "chains" field), e.g. "X tracked whale wallets bought this token on [chain], totaling $Y." Do not mention it if that field is absent.
+
+---
+
+The following JSON is the ONLY verified evidence for QUANTITATIVE data (price, market cap, TVL, volume, rank).
+
+{live_data}
+
+Rules:
+
+1. For price, market cap, volume, TVL, and any other NUMBER: treat the JSON above as the ONLY source. Never invent or estimate a number not present in the JSON.
+
+2. For qualitative context (Team & Backers, Tokenomics utility/purpose, Competitive Landscape, general project background): if the project is WELL-ESTABLISHED and its founders/backers/competitors are broadly, publicly documented (e.g. major well-known protocols), you MAY state those well-known facts from general knowledge - but you MUST prefix that section's content with "(From general knowledge, not live-verified):" so the reader knows this isn't sourced from the JSON above.
+
+3. If the project is small, new, or genuinely obscure enough that you don't have confident, well-established knowledge of it, do NOT guess. Write exactly:
+
+"Not available from provided live data."
+
+4. Never invent specific numbers (funding amounts, token allocation percentages, investor names) even for well-known projects unless you're confident they're accurate, widely-reported facts. When in doubt, omit rather than guess.
+
+5. Categories are classifications only.
+They do NOT prove architecture, technology, security, or implementation.
+
+6. GitHub repository existence does NOT imply active development.
+
+7. Current TVL does NOT imply TVL growth.
+
+8. Never discuss historical TVL unless historical data exists.
+
+Project:
+{project}
+"""
+
+    return ask_ai_premium(prompt)
+
+
 
 
 def generate_trade_plan(coin):

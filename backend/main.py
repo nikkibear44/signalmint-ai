@@ -22,6 +22,8 @@ from agent import (
     portfolio_review,
     due_diligence,
     generate_trade_plan,
+    due_diligence_premium,
+    compare_tokens_premium,
 )
 
 from router import detect_intent
@@ -253,7 +255,7 @@ def due_diligence_paid(data: DueDiligenceRequest, request: Request):
     except x402_payment.PaymentVerificationError as e:
         return _x402_challenge_response(resource_url, description, error=str(e))
 
-    result = due_diligence(data.project)
+    result = due_diligence_premium(data.project)
 
     response = response_template("x402/due-diligence")
     response.update(
@@ -291,7 +293,7 @@ def compare_paid(data: CompareRequest, request: Request):
     except x402_payment.PaymentVerificationError as e:
         return _x402_challenge_response(resource_url, description, error=str(e))
 
-    result = compare_tokens(data.token1, data.token2)
+    result = compare_tokens_premium(data.token1, data.token2)
 
     response = response_template("x402/compare")
     response.update(
