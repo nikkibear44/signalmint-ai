@@ -12,6 +12,7 @@ function TokenIntelligence() {
   const [report, setReport] = useState("");
   const [error, setError] = useState("");
   const [lastProject, setLastProject] = useState("");
+  const [resetCounter, setResetCounter] = useState(0);
 
   async function handleGenerate() {
     if (!query.trim()) {
@@ -22,6 +23,7 @@ function TokenIntelligence() {
     setLoading(true);
     setError("");
     setReport("");
+    setResetCounter((c) => c + 1);
 
     try {
       const data = await getDueDiligence(query.trim());
@@ -73,9 +75,14 @@ function TokenIntelligence() {
 
       {query.trim() && (
         <div className="ti-search-card" style={{ marginTop: 16 }}>
-          <h3>Or Pay to Unlock — Institutional Due Diligence (0.05 USDT0)</h3>
-          <p>Same report, paid via x402 on X Layer — no rate limits, verified on-chain.</p>
+          <h3>Or Pay to Unlock — Premium Institutional Report (0.05 USDT0)</h3>
+          <p>
+            Deeper analysis via a stronger AI model — includes Extended Competitive
+            Analysis, Scenario Analysis, and Institutional Considerations not in the
+            free report. Paid via x402 on X Layer, verified on-chain.
+          </p>
           <PayToUnlock
+            key={query.trim() + "-" + resetCounter}
             endpoint="/x402/due-diligence"
             requestBody={{ project: query.trim() }}
             dryRun={false}

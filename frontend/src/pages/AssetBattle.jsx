@@ -13,6 +13,7 @@ function AssetBattle() {
   const [report, setReport] = useState("");
   const [error, setError] = useState("");
   const [lastPair, setLastPair] = useState(null);
+  const [resetCounter, setResetCounter] = useState(0);
 
   async function handleCompare() {
     if (!token1.trim() || !token2.trim()) {
@@ -23,6 +24,7 @@ function AssetBattle() {
     setLoading(true);
     setError("");
     setReport("");
+    setResetCounter((c) => c + 1);
 
     try {
       const data = await getCompareTokens(token1.trim(), token2.trim());
@@ -84,9 +86,14 @@ function AssetBattle() {
 
       {token1.trim() && token2.trim() && (
         <div className="ab-search-card" style={{ marginTop: 16 }}>
-          <h3>Or Pay to Unlock — Asset Battle Comparison (0.05 USDT0)</h3>
-          <p>Same comparison, paid via x402 on X Layer.</p>
+          <h3>Or Pay to Unlock — Premium Comparison (0.05 USDT0)</h3>
+          <p>
+            Deeper analysis via a stronger AI model — includes Risk-Adjusted
+            Comparison, Scenario Analysis, and Portfolio Fit not in the free
+            comparison. Paid via x402 on X Layer, verified on-chain.
+          </p>
           <PayToUnlock
+            key={token1.trim() + "-" + token2.trim() + "-" + resetCounter}
             endpoint="/x402/compare"
             requestBody={{ token1: token1.trim(), token2: token2.trim() }}
             dryRun={false}
