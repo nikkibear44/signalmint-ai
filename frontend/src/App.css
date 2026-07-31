@@ -2689,3 +2689,107 @@ footer {
 .ai-report table a {
   color: #2ee6b8;
 }
+
+/* ---------- SIGNATURE BRAND MOTIF: SIGNAL PULSE ---------- */
+/* A recurring radar-ping animation - ties directly to "Signal" in
+   SignalMint and "Radar" in Opportunity Radar. Used in the hero and
+   as the loading indicator across every AI-generating page. */
+
+.hero-signal-pulse {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 700px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.signal-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgba(46, 230, 184, 0.35);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: signal-expand 4s ease-out infinite;
+}
+
+.signal-ring-1 {
+  width: 200px;
+  height: 200px;
+  animation-delay: 0s;
+}
+
+.signal-ring-2 {
+  width: 200px;
+  height: 200px;
+  animation-delay: 1.3s;
+}
+
+.signal-ring-3 {
+  width: 200px;
+  height: 200px;
+  animation-delay: 2.6s;
+}
+
+@keyframes signal-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.2);
+    opacity: 0;
+  }
+}
+
+/* Reusable small signal-pulse loading indicator, for use anywhere
+   the AI is generating a response - the brand's signature "thinking"
+   state, instead of a generic spinner. */
+
+.signal-loader {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+}
+
+.signal-loader .signal-ring {
+  border-color: rgba(46, 230, 184, 0.6);
+  animation-duration: 1.8s;
+}
+
+.signal-loader .signal-ring-1 {
+  width: 12px;
+  height: 12px;
+  animation-delay: 0s;
+}
+
+.signal-loader .signal-ring-2 {
+  width: 12px;
+  height: 12px;
+  animation-delay: 0.6s;
+}
+
+.signal-loader .signal-ring-3 {
+  width: 12px;
+  height: 12px;
+  animation-delay: 1.2s;
+}
+
+.signal-loader .signal-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2ee6b8;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 12px rgba(46, 230, 184, 0.8);
+}

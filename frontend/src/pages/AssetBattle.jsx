@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { getCompareTokens } from "../services/api";
+import SignalLoader from "../components/SignalLoader";
 
 function AssetBattle() {
   const [token1, setToken1] = useState("");
@@ -82,12 +83,7 @@ function AssetBattle() {
 
       {loading && (
         <div className="ab-loading-card">
-          <div className="ab-loading-skeleton" />
-          <div className="ab-loading-skeleton" style={{ width: "70%" }} />
-          <div className="ab-loading-skeleton" style={{ width: "85%" }} />
-          <p className="ab-loading-text">
-            Comparing {token1} vs {token2}...
-          </p>
+          <SignalLoader text={`Comparing ${token1} vs ${token2}...`} />
         </div>
       )}
 

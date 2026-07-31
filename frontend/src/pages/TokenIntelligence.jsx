@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { getDueDiligence } from "../services/api";
+import SignalLoader from "../components/SignalLoader";
 
 function TokenIntelligence() {
   const [query, setQuery] = useState("");
@@ -71,13 +72,9 @@ function TokenIntelligence() {
 
       {loading && (
         <div className="ti-loading-card">
-          <div className="ti-loading-skeleton" />
-          <div className="ti-loading-skeleton" style={{ width: "70%" }} />
-          <div className="ti-loading-skeleton" style={{ width: "85%" }} />
-          <p className="ti-loading-text">
-            Researching {query} — this can take up to a minute for a full
-            institutional-grade report...
-          </p>
+          <SignalLoader
+            text={`Researching ${query} — this can take up to a minute for a full institutional-grade report...`}
+          />
         </div>
       )}
 

@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 function Hero() {
   return (
     <section className="hero">
-      <div className="hero-glow" />
+      <div className="hero-signal-pulse">
+        <span className="signal-ring signal-ring-1" />
+        <span className="signal-ring signal-ring-2" />
+        <span className="signal-ring signal-ring-3" />
+      </div>
 
       <div className="hero-content">
 
