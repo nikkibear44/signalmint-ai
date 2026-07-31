@@ -1,149 +1,146 @@
-# SignalMint AI
+SignalMint AI
 
-**One intelligence engine. AI-powered crypto research, opportunity discovery, whale tracking, and portfolio analysis — built for the OKX AI Genesis Hackathon.**
+One intelligence engine. Six AI-powered crypto tools. Built for the OKX AI Genesis Hackathon.
 
-SignalMint AI turns live crypto market data into actionable intelligence. Instead of five disconnected tools, every feature shares one underlying intelligence engine — the same market data, AI reasoning, and analysis pipeline power everything you see.
+SignalMint AI turns live crypto market data into actionable intelligence. Instead of disconnected tools, every feature shares one underlying intelligence engine — the same market data, AI reasoning, and analysis pipeline power everything you see.
 
-🔗 **Live demo:** https://signalmint-ai.vercel.app/
-🎥 **Demo video:** https://x.com/signalmint_ai/status/2081711659446669561?s=20
-🆔 **OKX.AI Agent ID:** `#9708`
+🔗 Live demo: https://signalmint-ai.vercel.app 🆔 OKX.AI Agent ID: #9708 (still review)
 
-> **Note:** The backend runs on a free Render instance, which spins down after inactivity. The first request after idle time may take 30-50 seconds to respond while it wakes up — subsequent requests are fast.
+Note: The backend runs on a free Render instance, which spins down after inactivity. The first request after idle time may take 30-50 seconds to respond while it wakes up — subsequent requests are fast.
 
----
+Real Track Record — Smart Money
 
-## Why SignalMint AI
+SignalMint's Smart Money whale tracker isn't a backtest or a simulation — it's a live feed of real tracked wallets. Two real calls surfaced by the feature itself:
+
+$CASHCAT — flagged by tracked whale buying at approximately $12K market cap. Currently trading at a market cap over $43M.
+$ANSEM (The Black Bull) — flagged by tracked whale buying at approximately $40K market cap. Currently trading at a market cap over $71M.
+
+These are real, personally tracked calls surfaced by the same whale-tracking infrastructure live on the site today — not backtested or cherry-picked after the fact.
+
+Why SignalMint AI
 
 Most crypto tools either dump raw data on you or generate generic AI text with no real market grounding. SignalMint AI does neither:
 
-- **📡 Live Market Data** — real-time data from CoinGecko, DexScreener, Helius, and DeFiLlama, not stale snapshots
-- **🧠 AI Reasoning** — the AI analyzes actual market conditions and on-chain data, not just answering a prompt in a vacuum
-- **⚡ One Intelligence Engine** — every tool shares the same underlying data and reasoning pipeline, so insights stay consistent across the platform
-- **📄 Professional Reports** — structured, readable output built for traders and investors, not walls of JSON
+📡 Live Market Data — real-time data from CoinGecko, DexScreener, Helius, Blockscout, and on-chain RPC calls — with automatic fallback when one source doesn't have a token
+🧠 AI Reasoning — the AI analyzes actual market conditions and on-chain data, and is explicit about what's verified versus general knowledge — it never fabricates numbers it doesn't have
+⚡ One Intelligence Engine — every tool shares the same underlying data and reasoning pipeline, so insights stay consistent across the platform
+💳 Real Payments — two services are gated by genuine x402 payment verification on X Layer, tested end-to-end with real settled transactions, not mocked
+Wallet Safety
 
----
+Connecting a wallet to Portfolio Doctor is read-only by design:
 
-## Features (Shipped)
+No private keys or seed phrases are ever requested. Wallet connection uses each wallet's standard, public connect() API (Phantom for Solana, OKX Wallet for EVM chains) — the same read-only account-access request used by virtually every dapp, including Uniswap, OpenSea, and every major DeFi protocol.
+No transaction signing happens anywhere in Portfolio Doctor. The feature only reads your public wallet address, then queries public blockchain data (via Helius, Blockscout, and on-chain RPC calls) using that address alone — the same information anyone can already see on a public block explorer.
+Nothing is executed on your behalf, anywhere in the product. Even the "Prepare Execution" feature in Opportunity Radar never signs or sends a transaction itself — it only generates a ready-to-review instruction for your own agent to execute, with your own explicit confirmation at every step.
+Verify it yourself — this is open source. See WalletContext.jsx and PortfolioDoctor.jsx directly in the repo. Search for signTransaction, signMessage, or sendTransaction — you won't find any of them in the wallet connection code, because they're never used.
+Features (All 6 Shipped)
+⭐ Opportunity Radar
 
-### ⭐ Opportunity Radar
-Analyzes any token and returns an AI Opportunity Score (0–100), a BUY/SELL/HOLD signal with confidence %, key catalysts, risk assessment, and a full research report. Includes a persistent AI Watchlist to track picks over time.
+Analyzes any token and returns an AI Opportunity Score (0–100), a BUY/SELL/HOLD signal with confidence %, key catalysts, risk assessment, and a full research report. Includes an AI Decision Center with concrete entry zone/take profit/stop loss targets when real price data supports it, a persistent AI Watchlist, and a Prepare Execution flow that generates a ready-to-send trade instruction for your own agent to execute via OKX DEX — SignalMint never holds funds or executes trades itself.
 
-### 📊 Alpha Scanner
+📊 Alpha Scanner
+
 Automatically scans and ranks today's highest-conviction market opportunities. Each pick opens into a full AI-generated action plan — entry zone, take profit, stop loss, holding period, and risk/reward.
 
-### 🐋 Smart Money (Whale Tracker)
-Tracks real-time buy/sell activity from tracked whale wallets on Solana via Helius, with USD-valued trades, AI-generated insight per transaction, and a "Top Smart Money Picks Today" leaderboard ranked by real buy volume and wallet count.
+🐋 Smart Money (Whale Tracker)
 
-### 💼 Portfolio Doctor
-Connect an OKX Wallet and get a live analysis of real on-chain holdings — total value, per-token allocation, concentration risk scoring, and genuine AI-written portfolio advice (not templated text) generated from your actual holdings.
+Tracks real-time buy/sell activity from tracked whale wallets across Solana and Robinhood Chain, with USD-valued trades, AI-generated insight per transaction, and a "Top Smart Money Picks Today" leaderboard ranked by real buy volume and wallet count. Auto-refreshes every 30 seconds.
 
----
+💼 Portfolio Doctor
 
-## Tech Stack
+Connect a wallet and get a live analysis of real on-chain holdings — across Solana (Phantom), Robinhood Chain, and Stable Mainnet (OKX Wallet). Includes real ERC-20 token discovery via Blockscout + DexScreener pricing, concentration risk scoring, and genuine AI-written portfolio advice generated from actual holdings — not templated text.
 
-**Frontend:** React + Vite, React Router, `lucide-react` icons
-**Backend:** FastAPI (Python), Uvicorn
-**Data sources:** CoinGecko, DexScreener, Helius (Solana RPC + token metadata), DeFiLlama
-**Wallet integration:** OKX Wallet (Solana provider)
-**AI reasoning:** Custom prompt pipeline (`agent.py`, `prompts.py`) grounded in live market data
-**Deployment:** Render (backend), Vercel (frontend)
+🔍 Token Intelligence
 
----
+Ask a real question — "Is Uniswap a good long-term hold?" — or just type a project name. Generates an institutional-grade due diligence report (Team & Backers, Technology, Tokenomics, Ecosystem, Adoption, Competitive Landscape, Bull/Bear Case, Risk Assessment) grounded in live verified data, with a natural-language extraction step so you don't need to know the exact token name. Cross-references analyzed tokens against SignalMint's own whale-tracking data — if a tracked wallet has traded the token, the report cites it as a real, verified signal.
 
-## Architecture
+⚔️ Asset Battle
 
-```
-Market Data (CoinGecko, DexScreener, Helius, DeFiLlama)
+Side-by-side AI comparison of two crypto assets — market position, strengths, weaknesses, and a neutral AI verdict, with real market data tables (price, market cap, volume, ATH/ATL, supply, sentiment).
+
+Paid Services (x402 on X Layer)
+
+Two features are also still under review as paid A2MCP services on OKX.AI, gated by real x402 payment verification — tested locally and against the live production endpoint with genuine on-chain settled transactions before being registered:
+
+Service	Price	Endpoint
+Institutional Due Diligence	0.05 USDT0	/x402/due-diligence
+Asset Battle Comparison	0.05 USDT0	/x402/compare
+
+The remaining four services are registered as free A2MCP services on the same ASP (#9708).
+
+Tech Stack
+
+Frontend: React + Vite, React Router, lucide-react icons, remark-gfm for markdown tables Backend: FastAPI (Python), Uvicorn Data sources: CoinGecko, DexScreener, Helius (Solana RPC + token metadata), Blockscout (Robinhood Chain), on-chain RPC calls (X Layer, Robinhood Chain, Stable Mainnet) Wallet integration: OKX Wallet (EVM chains), Phantom (Solana) Payments: x402 protocol via OKX Agent Payments Protocol, settled in USDT0 on X Layer AI reasoning: Custom prompt pipeline (agent.py, prompts.py) grounded in live market data, with explicit verified-vs-general-knowledge labeling Deployment: Render (backend), Vercel (frontend)
+
+Architecture
+Market Data (CoinGecko, DexScreener, Helius, Blockscout, on-chain RPC)
               │
               ▼
      Intelligence Engine (agent.py)
    AI reasoning grounded in real data
               │
-              ▼
-   ┌──────────┼──────────┬────────────┐
-   ▼          ▼          ▼            ▼
-Opportunity  Alpha    Smart Money  Portfolio
-  Radar     Scanner    Tracker      Doctor
-```
+   ┌──────────┼──────────┬────────────┬──────────────┬─────────────┐
+   ▼          ▼          ▼            ▼              ▼             ▼
+Opportunity  Alpha    Smart Money  Portfolio      Token        Asset
+  Radar     Scanner    Tracker      Doctor      Intelligence   Battle
+Roadmap
+✅ Phase 1 — Core platform (shipped)
 
----
+All 6 features live, multi-chain wallet support, real-time whale tracking, natural language due diligence.
 
-## Roadmap
+✅ Phase 2 — Monetization (shipped)
 
-This is what "done" actually looks like for SignalMint AI — both polishing what's shipped and completing what's already partially built.
+Real x402 payment verification built and tested end-to-end (local + live production, on-chain verified) for 2 services. Registered as paid A2MCP services on OKX.AI.
 
-### Phase 1 — Polish the 4 shipped features
+✅ Phase 3 — Differentiation (shipped)
 
-| Feature | Planned improvements |
-|---|---|
-| **Opportunity Radar** | Historical score tracking per token (see how a score changed over time), configurable alert thresholds, multi-token comparison view |
-| **Alpha Scanner** | Backtested accuracy tracking on past picks, filter by sector/market cap tier, personalized ranking based on user's risk profile |
-| **Smart Money** | Expand tracked wallet list, let users add/track custom wallets, deduplicate transactions by signature, direct DexScreener chart links per token |
-| **Portfolio Doctor** | Multi-chain support (currently Solana-only), rebalancing suggestions with specific target allocations, historical portfolio value tracking over time |
+Whale-activity cross-linking in Token Intelligence, real on-chain supply lookups for tokens without CoinGecko listings, DexScreener fallback for low-cap/new tokens, historical price context (7d/30d/1y, ATH/ATL).
 
-### Phase 2 — Ship the remaining 2 features
+🔜 Phase 4 — Expand paid tier
 
-The backend logic for both already exists and is wired into the API (`main.py`) — only the frontend UI is left to build.
+Add x402 payment to the remaining 4 services. Explore tiered pricing and a subscription pass alongside pay-per-call.
 
-- **🔍 Token Intelligence** — institutional-grade due diligence reports. Backend: `due_diligence()` in `agent.py`, live at `POST /due-diligence`. Remaining: frontend page + report UI.
-- **⚔️ Asset Battle** — side-by-side AI comparison of two tokens. Backend: `compare_tokens()` in `agent.py`, live at `POST /compare`. Remaining: frontend page + comparison UI.
+🔜 Phase 5 — Deeper chain coverage
 
-### Phase 3 — Monetization
+Expand Portfolio Doctor's ERC-20 discovery to Stable Mainnet (currently native-token-only, pending a free block explorer API for that chain). Add more tracked whale wallets across both chains.
 
-- Add x402-compliant payment verification to A2MCP endpoints (currently registered free) to enable pay-per-call pricing
-- Explore premium tiers: deeper historical data, custom wallet tracking limits, priority AI report generation
+🔜 Phase 6 — Platform growth
 
-### Phase 4 — Platform growth
+Public API access for other agents/developers to build on SignalMint's intelligence engine. Community features: shared watchlists, public leaderboards for top-performing picks.
 
-- Multi-chain expansion beyond Solana (EVM chains via OKX Wallet's existing multi-chain support)
-- Public API access for other agents/developers to build on top of SignalMint's intelligence engine
-- Community features: shared watchlists, public leaderboards for top-performing picks
-
----
-
-## Getting Started (Local Development)
-
-### Backend
-```bash
+Getting Started (Local Development)
+Backend
+bash
 cd backend
 pip install -r requirements.txt --break-system-packages
-# Add your API keys to a .env file (HELIUS_API_KEY, etc.)
+# Add your API keys to a .env file (HELIUS_API_KEY, COINGECKO_API_KEY, OPENAI_API_KEY, OKX_API_KEY, OKX_SECRET_KEY, OKX_PASSPHRASE)
 uvicorn main:app --reload
-```
-
-### Frontend
-```bash
+Frontend
+bash
 cd frontend
 npm install
 npm run dev
-```
+API Endpoints
+Endpoint	Method	Description
+/analyze	POST	Full AI analysis + Opportunity Score for a token
+/alpha-scanner	GET	Today's AI-ranked top picks
+/smart-money	GET	Live Solana whale wallet transaction feed
+/robinhood-smart-money	GET	Live Robinhood Chain whale wallet transaction feed
+/wallet-portfolio/{address}	GET	Real Solana wallet holdings + AI portfolio analysis
+/evm-portfolio/{chain}/{address}	GET	Real EVM wallet holdings (Robinhood Chain, Stable Mainnet)
+/market-snapshot	GET	Global crypto market data
+/trending	GET	Trending tokens
+/trade-plan	POST	AI action plan for a specific coin
+/compare	POST	AI comparison of two tokens (free)
+/due-diligence	POST	Institutional-grade project research (free)
+/x402/due-diligence	POST	Paid due diligence report, x402-gated (0.05 USDT0)
+/x402/compare	POST	Paid asset comparison, x402-gated (0.05 USDT0)
+Built For
 
----
+OKX.AI Genesis Hackathon — demonstrating how an agent-native economy works in practice, one Agent Service Provider at a time.
 
-## API Endpoints
+support me X 
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/analyze` | POST | Full AI analysis + Opportunity Score for a token |
-| `/alpha-scanner` | GET | Today's AI-ranked top picks |
-| `/smart-money` | GET | Live whale wallet transaction feed |
-| `/wallet-portfolio/{address}` | GET | Real wallet holdings + AI portfolio analysis |
-| `/market-snapshot` | GET | Global crypto market data |
-| `/trending` | GET | Trending tokens |
-| `/trade-plan` | POST | AI action plan for a specific coin |
-| `/compare` | POST | AI comparison of two tokens *(backend ready, frontend pending)* |
-| `/due-diligence` | POST | Institutional-grade project research *(backend ready, frontend pending)* |
+https://x.com/hizqilsky
+https://x.com/signalmint_ai/status/2081711659446669561
 
----
-
-## Built For
-
-**OKX.AI Genesis Hackathon** — demonstrating how an agent-native economy works in practice, one Agent Service Provider at a time.
-
----
-
-## License
-
-MIT
-
-<!-- redeploy trigger -->
