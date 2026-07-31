@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { getCompareTokens } from "../services/api";
 import SignalLoader from "../components/SignalLoader";
+import PayToUnlock from "../components/PayToUnlock";
 
 function AssetBattle() {
   const [token1, setToken1] = useState("");
@@ -80,6 +81,23 @@ function AssetBattle() {
 
         {error && <p className="ab-error">{error}</p>}
       </div>
+
+      {token1.trim() && token2.trim() && (
+        <div className="ab-search-card" style={{ marginTop: 16 }}>
+          <h3>Or Pay to Unlock — Asset Battle Comparison (0.05 USDT0)</h3>
+          <p>Same comparison, paid via x402 on X Layer.</p>
+          <PayToUnlock
+            endpoint="/x402/compare"
+            requestBody={{ token1: token1.trim(), token2: token2.trim() }}
+            dryRun={false}
+            showResult={false}
+            onSuccess={(data) => {
+              setReport(data.report || "");
+              setLastPair({ token1: token1.trim(), token2: token2.trim() });
+            }}
+          />
+        </div>
+      )}
 
       {loading && (
         <div className="ab-loading-card">

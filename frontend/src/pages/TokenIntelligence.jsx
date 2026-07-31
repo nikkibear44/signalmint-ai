@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { getDueDiligence } from "../services/api";
 import SignalLoader from "../components/SignalLoader";
+import PayToUnlock from "../components/PayToUnlock";
 
 function TokenIntelligence() {
   const [query, setQuery] = useState("");
@@ -69,6 +70,23 @@ function TokenIntelligence() {
 
         {error && <p className="ti-error">{error}</p>}
       </div>
+
+      {query.trim() && (
+        <div className="ti-search-card" style={{ marginTop: 16 }}>
+          <h3>Or Pay to Unlock — Institutional Due Diligence (0.05 USDT0)</h3>
+          <p>Same report, paid via x402 on X Layer — no rate limits, verified on-chain.</p>
+          <PayToUnlock
+            endpoint="/x402/due-diligence"
+            requestBody={{ project: query.trim() }}
+            dryRun={false}
+            showResult={false}
+            onSuccess={(data) => {
+              setReport(data.report || "");
+              setLastProject(query.trim());
+            }}
+          />
+        </div>
+      )}
 
       {loading && (
         <div className="ti-loading-card">
