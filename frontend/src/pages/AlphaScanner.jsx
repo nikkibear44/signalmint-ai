@@ -330,9 +330,64 @@ function AlphaScanner() {
 
                     {expandedExecution === a.symbol && (
                       <div className="pb-execute-box">
-                        <pre className="pb-execute-text">
-                          {buildAllocationExecutionInstruction(a)}
-                        </pre>
+                        <div className="pb-execute-intro">
+                          I'd like to execute a trade based on this
+                          AI-generated portfolio allocation from SignalMint
+                          AI.
+                        </div>
+
+                        <div className="pb-execute-row">
+                          <span className="pb-execute-label">Token</span>
+                          <span className="pb-execute-value">
+                            {a.name} ({a.symbol})
+                          </span>
+                        </div>
+                        <div className="pb-execute-row">
+                          <span className="pb-execute-label">Allocation</span>
+                          <span className="pb-execute-value">
+                            {a.allocation_pct}% of portfolio
+                          </span>
+                        </div>
+                        <div className="pb-execute-row">
+                          <span className="pb-execute-label">Amount</span>
+                          <span className="pb-execute-value">
+                            ~${a.allocation_usd} USDT0
+                          </span>
+                        </div>
+                        <div className="pb-execute-row">
+                          <span className="pb-execute-label">
+                            Current Price
+                          </span>
+                          <span className="pb-execute-value">
+                            ${a.price}
+                          </span>
+                        </div>
+                        <div className="pb-execute-row">
+                          <span className="pb-execute-label">AI Score</span>
+                          <span className="pb-execute-value">
+                            {a.ai_score}
+                          </span>
+                        </div>
+                        <div className="pb-execute-row">
+                          <span className="pb-execute-label">Risk</span>
+                          <span className="pb-execute-value">{a.risk}</span>
+                        </div>
+                        <div className="pb-execute-row">
+                          <span className="pb-execute-label">Reason</span>
+                          <span className="pb-execute-value">
+                            {a.catalyst}
+                          </span>
+                        </div>
+
+                        <div className="pb-execute-instruction">
+                          Please check whether {a.symbol} and its chain are
+                          supported by OKX DEX before proceeding. If
+                          supported, use the OKX Agent Payments Protocol /
+                          OKX DEX to execute this swap on my behalf, using
+                          my own connected wallet. Confirm the trade
+                          details with me before signing anything.
+                        </div>
+
                         <button
                           className="pb-copy-btn"
                           onClick={() => {
