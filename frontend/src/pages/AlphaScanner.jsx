@@ -303,9 +303,9 @@ function AlphaScanner() {
             <>
               {hiddenAlpha.results.length === 0 ? (
                 <div className="ha-empty">
-                  No qualifying overlaps right now — this is expected most
-                  of the time, since genuine matches (high AI score + real
-                  whale buying) are rare by design.
+                  No tokens currently show real tracked whale buying right
+                  now. This changes as whale activity happens — check back
+                  later.
                 </div>
               ) : (
                 <div className="ha-grid">

@@ -964,10 +964,9 @@ def find_hidden_alpha():
             "success": True,
             "results": [],
             "narrative": (
-                "No tokens currently show both a strong AI signal and "
-                "real tracked whale buying at the same time. This is "
-                "expected most of the time - genuine overlaps are rare "
-                "by design."
+                "No tokens currently show real tracked whale buying "
+                "right now. This changes as whale activity happens - "
+                "check back later for new matches."
             ),
         }
 
