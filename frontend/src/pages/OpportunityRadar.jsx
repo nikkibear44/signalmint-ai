@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
+import SignalLoader from "../components/SignalLoader";
 import {
   analyzeToken,
   getMarketSnapshot,
@@ -630,7 +631,7 @@ function OpportunityRadar() {
           </button>
         </div>
 
-        {loading && <p style={{ marginTop: "20px" }}>🔄 Analyzing...</p>}
+        {loading && <SignalLoader text="Analyzing market data and generating insights..." />}
 
         {error && (
           <p style={{ color: "#ff6666", marginTop: "20px" }}>{error}</p>

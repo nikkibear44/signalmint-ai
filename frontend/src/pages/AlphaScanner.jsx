@@ -514,7 +514,7 @@ function AlphaScanner() {
           )}
         </div>
 
-        {loading && <h2>🔄 Running AI scan...</h2>}
+        {loading && <SignalLoader text="Running AI scan across today's market..." />}
 
         {error && <p style={{ color: "#ff6666" }}>{error}</p>}
 

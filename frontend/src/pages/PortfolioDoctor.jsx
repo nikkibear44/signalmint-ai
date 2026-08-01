@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
+import SignalLoader from "../components/SignalLoader";
 import { useWallet } from "../context/WalletContext";
 import { getWalletPortfolio, getEvmPortfolio } from "../services/api";
 
@@ -114,7 +115,7 @@ function PortfolioDoctor() {
       )}
 
       {activeAddress && loading && (
-        <p style={{ marginTop: "20px" }}>🔄 Analyzing your portfolio...</p>
+        <SignalLoader text="Analyzing your portfolio..." />
       )}
 
       {activeAddress && error && (
