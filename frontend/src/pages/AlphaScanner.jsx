@@ -236,6 +236,44 @@ function AlphaScanner() {
 
           {!buildLoading && buildResult && (
             <div className="pb-results">
+              <div className="pb-strategy-card">
+                <div className="pb-strategy-header">
+                  <span className="pb-strategy-check">✅</span>
+                  <span>Strategy Ready</span>
+                </div>
+
+                <div className="pb-strategy-grid">
+                  <div className="pb-strategy-cell">
+                    <span>Budget</span>
+                    <strong>${Number(buildResult.budget).toLocaleString()}</strong>
+                  </div>
+                  <div className="pb-strategy-cell">
+                    <span>Risk</span>
+                    <strong style={{ textTransform: "capitalize" }}>
+                      {buildResult.risk_tolerance}
+                    </strong>
+                  </div>
+                  <div className="pb-strategy-cell">
+                    <span>Expected Horizon</span>
+                    <strong>{buildResult.expected_horizon}</strong>
+                  </div>
+                  <div className="pb-strategy-cell">
+                    <span>AI Confidence</span>
+                    <strong>
+                      {buildResult.ai_confidence != null
+                        ? `${buildResult.ai_confidence}%`
+                        : "N/A"}
+                    </strong>
+                  </div>
+                  <div className="pb-strategy-cell">
+                    <span>Status</span>
+                    <strong className="pb-strategy-status">
+                      Ready to Execute
+                    </strong>
+                  </div>
+                </div>
+              </div>
+
               <div className="pb-allocation-grid">
                 {buildResult.allocations.map((a) => (
                   <div key={a.symbol} className="pb-allocation-card">

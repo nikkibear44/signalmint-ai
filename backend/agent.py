@@ -860,12 +860,28 @@ with clear headers.
 
     narrative = ask_ai(prompt)
 
+    # Real, deterministic values for the summary card - never trust
+    # the AI to invent a "confidence %" out of thin air. Confidence is
+    # the actual average AI Opportunity Score of the allocated picks -
+    # a real number already computed, not decoration.
+    scored_picks = [a["ai_score"] for a in allocations if a.get("ai_score") is not None]
+    ai_confidence = round(sum(scored_picks) / len(scored_picks)) if scored_picks else None
+
+    horizon_by_risk = {
+        "low": "6-12 months",
+        "medium": "3-6 months",
+        "high": "1-3 months",
+    }
+    expected_horizon = horizon_by_risk.get(risk_tolerance, "3-6 months")
+
     return {
         "success": True,
         "budget": budget,
         "risk_tolerance": risk_tolerance,
         "allocations": allocations,
         "narrative": narrative,
+        "ai_confidence": ai_confidence,
+        "expected_horizon": expected_horizon,
     }
 
 

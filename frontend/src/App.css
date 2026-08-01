@@ -3795,3 +3795,62 @@ footer {
   border-radius: 16px;
   padding: 22px;
 }
+
+/* ---------- PORTFOLIO BUILDER: STRATEGY READY CARD ---------- */
+
+.pb-strategy-card {
+  background: linear-gradient(
+    135deg,
+    rgba(46, 230, 184, 0.1),
+    rgba(46, 230, 184, 0.02)
+  );
+  border: 1px solid rgba(46, 230, 184, 0.35);
+  border-radius: 18px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 0 40px rgba(46, 230, 184, 0.1);
+}
+
+.pb-strategy-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 20px;
+}
+
+.pb-strategy-check {
+  font-size: 22px;
+}
+
+.pb-strategy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 18px;
+}
+
+.pb-strategy-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pb-strategy-cell span {
+  color: #888;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pb-strategy-cell strong {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.pb-strategy-status {
+  color: #2ee6b8 !important;
+}
