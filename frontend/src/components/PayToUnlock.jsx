@@ -462,7 +462,8 @@ function PayToUnlock({ endpoint, requestBody, onSuccess, dryRun = true, showResu
 
   return (
     <div style={{ border: "1px solid #333", borderRadius: 8, padding: 16 }}>
-      <button onClick={() => handlePay()} disabled={isBusy}>
+      <button className="pu-premium-btn" onClick={() => handlePay()} disabled={isBusy}>
+        🔒{" "}
         {isBusy
           ? STEP_LABELS[step] || "Working..."
           : step === STEPS.SUCCESS
