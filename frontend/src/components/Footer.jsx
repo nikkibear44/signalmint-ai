@@ -102,6 +102,9 @@ function Footer() {
             >
               API Status <ExternalLink size={12} />
             </a>
+            <a href="#x402">
+              ⚡ x402 Payments
+            </a>
           </div>
         </div>
       </div>
