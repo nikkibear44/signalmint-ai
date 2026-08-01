@@ -24,6 +24,7 @@ from agent import (
     generate_trade_plan,
     due_diligence_premium,
     compare_tokens_premium,
+    build_portfolio_allocation,
 )
 
 from router import detect_intent
@@ -73,6 +74,11 @@ class QueryRequest(BaseModel):
 
 class TradePlanRequest(BaseModel):
     coin: dict
+
+
+class PortfolioBuilderRequest(BaseModel):
+    budget: float
+    risk_tolerance: str
 
 
 # ===========================
@@ -395,6 +401,27 @@ async def alpha_scanner():
     response["results"] = data
 
     return response
+
+
+# ===========================
+# Portfolio Builder
+# ===========================
+
+@app.post("/portfolio-builder")
+def portfolio_builder(data: PortfolioBuilderRequest):
+
+    if data.budget <= 0:
+        return {"success": False, "message": "Budget must be greater than 0."}
+
+    try:
+        return build_portfolio_allocation(data.budget, data.risk_tolerance)
+    except Exception as e:
+        print(f"[Portfolio Builder Error] {e}")
+
+        return {
+            "success": False,
+            "message": "Unable to build portfolio allocation.",
+        }
 
 
 # ===========================

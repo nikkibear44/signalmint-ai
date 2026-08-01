@@ -757,3 +757,114 @@ Rules:
             "risk_reward": "-",
             "summary": response,
         }
+
+
+def build_portfolio_allocation(budget, risk_tolerance):
+    """
+    Given a budget and risk tolerance, allocates across today's
+    top-ranked Alpha Scanner opportunities. Percentages are computed
+    deterministically in Python (never trust an LLM to do exact math
+    that must sum to 100%) - the AI's job is only to explain the
+    reasoning, using the real numbers already computed.
+    """
+
+    from alpha_scanner import scan_alpha
+
+    candidates = scan_alpha()
+
+    if not candidates:
+        return {
+            "success": False,
+            "message": "No opportunities available right now. Try again shortly.",
+        }
+
+    # Filter pool by risk tolerance
+    risk_tolerance = (risk_tolerance or "medium").lower()
+
+    if risk_tolerance == "low":
+        pool = [c for c in candidates if c.get("risk") in ("Low", "Medium")]
+    elif risk_tolerance == "high":
+        pool = candidates
+    else:
+        pool = [c for c in candidates if c.get("risk") in ("Low", "Medium", "High")]
+
+    if not pool:
+        pool = candidates  # fallback if filter emptied it
+
+    pool = pool[:5]  # top 5 after filtering
+
+    # Weight allocation by AI Opportunity Score, normalized to 100%
+    total_score = sum(c.get("ai_score", 50) for c in pool) or 1
+    allocations = []
+
+    for c in pool:
+        weight = c.get("ai_score", 50) / total_score
+        pct = round(weight * 100, 1)
+        usd = round(budget * weight, 2)
+
+        allocations.append(
+            {
+                "name": c.get("name"),
+                "symbol": c.get("symbol"),
+                "ai_score": c.get("ai_score"),
+                "risk": c.get("risk"),
+                "price": c.get("price"),
+                "change_24h": c.get("change_24h"),
+                "catalyst": c.get("catalyst"),
+                "allocation_pct": pct,
+                "allocation_usd": usd,
+            }
+        )
+
+    # Fix rounding drift so percentages sum to exactly 100
+    diff = round(100 - sum(a["allocation_pct"] for a in allocations), 1)
+    if allocations:
+        allocations[-1]["allocation_pct"] = round(
+            allocations[-1]["allocation_pct"] + diff, 1
+        )
+        allocations[-1]["allocation_usd"] = round(
+            budget - sum(a["allocation_usd"] for a in allocations[:-1]), 2
+        )
+
+    allocations_summary = "\n".join(
+        f"- {a['name']} ({a['symbol']}): {a['allocation_pct']}% (${a['allocation_usd']}) "
+        f"- AI Score {a['ai_score']}, Risk: {a['risk']}, Price: ${a['price']}, "
+        f"24h: {a['change_24h']}%, Catalyst: {a['catalyst']}"
+        for a in allocations
+    )
+
+    prompt = f"""
+You are an AI portfolio construction assistant.
+
+A user has ${budget} to invest with a {risk_tolerance} risk tolerance.
+
+Based on today's top AI-ranked opportunities, the following allocation has
+already been computed (percentages and dollar amounts are FINAL - do not
+recalculate or change them):
+
+{allocations_summary}
+
+Write a clear explanation covering:
+
+1. Overall strategy - why this allocation fits a {risk_tolerance} risk tolerance
+2. For EACH asset: one or two sentences on why it's included and at that weight
+3. Suggested entry approach - using the real price data given, suggest whether
+   to enter immediately or scale in gradually (do not invent specific price
+   targets not derivable from the data given)
+4. Key risks across the overall allocation, not just per-asset
+5. A brief closing note reminding this is not financial advice
+
+Never invent numbers not provided above. Keep it concise and well-organized
+with clear headers.
+"""
+
+    narrative = ask_ai(prompt)
+
+    return {
+        "success": True,
+        "budget": budget,
+        "risk_tolerance": risk_tolerance,
+        "allocations": allocations,
+        "narrative": narrative,
+    }
+

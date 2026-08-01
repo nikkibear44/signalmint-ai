@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
-import { getAlphaScanner } from "../services/api";
+import { getAlphaScanner, getPortfolioBuilder } from "../services/api";
 import TokenDetailModal from "../components/TokenDetailModal";
+import SignalLoader from "../components/SignalLoader";
 
 function getRecommendation(score) {
   if (score >= 90) {
@@ -43,11 +46,24 @@ function riskStyle(risk) {
   return { background: "#4d1f1f", color: "#ff6666" };
 }
 
+const RISK_OPTIONS = [
+  { value: "low", label: "Low Risk" },
+  { value: "medium", label: "Medium Risk" },
+  { value: "high", label: "High Risk" },
+];
+
 function AlphaScanner() {
   const [loading, setLoading] = useState(true);
   const [coins, setCoins] = useState([]);
   const [error, setError] = useState("");
   const [selectedCoin, setSelectedCoin] = useState(null);
+
+  // Portfolio builder state
+  const [budget, setBudget] = useState("5000");
+  const [riskTolerance, setRiskTolerance] = useState("medium");
+  const [buildLoading, setBuildLoading] = useState(false);
+  const [buildResult, setBuildResult] = useState(null);
+  const [buildError, setBuildError] = useState("");
 
   async function loadScanner() {
     try {
@@ -62,6 +78,33 @@ function AlphaScanner() {
     }
 
     setLoading(false);
+  }
+
+  async function handleBuildPortfolio() {
+    const amount = Number(budget);
+
+    if (!amount || amount <= 0) {
+      setBuildError("Please enter a valid budget amount.");
+      return;
+    }
+
+    setBuildLoading(true);
+    setBuildError("");
+    setBuildResult(null);
+
+    try {
+      const data = await getPortfolioBuilder(amount, riskTolerance);
+
+      if (data.success) {
+        setBuildResult(data);
+      } else {
+        setBuildError(data.message || "Unable to build portfolio allocation.");
+      }
+    } catch (err) {
+      setBuildError("Unable to connect to SignalMint AI.");
+    }
+
+    setBuildLoading(false);
   }
 
   useEffect(() => {
@@ -112,6 +155,102 @@ function AlphaScanner() {
             <div className="as-stat-label">🟢 Status</div>
             <div className="as-stat-value">Live</div>
           </div>
+        </div>
+
+        {/* Portfolio Builder */}
+        <div className="pb-card">
+          <h3>💰 What Should I Buy With $X?</h3>
+          <p className="pb-sub">
+            Give SignalMint a budget and risk tolerance — it'll allocate
+            across today's top-ranked opportunities and explain why.
+          </p>
+
+          <div className="pb-inputs-row">
+            <div className="pb-input-group">
+              <label>Budget (USD)</label>
+              <input
+                type="number"
+                className="pb-input"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                min="1"
+              />
+            </div>
+
+            <div className="pb-input-group">
+              <label>Risk Tolerance</label>
+              <div className="pb-risk-pills">
+                {RISK_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    className={`pb-risk-pill ${
+                      riskTolerance === opt.value ? "pb-risk-pill-active" : ""
+                    }`}
+                    onClick={() => setRiskTolerance(opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              className="pb-build-btn"
+              onClick={handleBuildPortfolio}
+              disabled={buildLoading}
+            >
+              {buildLoading ? "Building..." : "Build My Portfolio"}
+            </button>
+          </div>
+
+          {buildError && <p className="pb-error">{buildError}</p>}
+
+          {buildLoading && (
+            <SignalLoader text="Scanning opportunities and building your allocation..." />
+          )}
+
+          {!buildLoading && buildResult && (
+            <div className="pb-results">
+              <div className="pb-allocation-grid">
+                {buildResult.allocations.map((a) => (
+                  <div key={a.symbol} className="pb-allocation-card">
+                    <div className="pb-allocation-header">
+                      <strong>{a.name}</strong>
+                      <span className="pb-allocation-symbol">{a.symbol}</span>
+                    </div>
+                    <div className="pb-allocation-pct">{a.allocation_pct}%</div>
+                    <div className="pb-allocation-usd">
+                      ${a.allocation_usd.toLocaleString()}
+                    </div>
+                    <div className="pb-allocation-bar-track">
+                      <div
+                        className="pb-allocation-bar-fill"
+                        style={{ width: `${a.allocation_pct}%` }}
+                      />
+                    </div>
+                    <div className="pb-allocation-meta">
+                      <span>AI Score {a.ai_score}</span>
+                      <span>{a.risk} Risk</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pb-narrative">
+                <div className="ai-report">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {buildResult.narrative}
+                  </ReactMarkdown>
+                </div>
+              </div>
+
+              <p className="pb-disclaimer">
+                This is not financial advice. Allocations are based on
+                current AI Opportunity Scores, which change as market
+                conditions change.
+              </p>
+            </div>
+          )}
         </div>
 
         {loading && <h2>🔄 Running AI scan...</h2>}

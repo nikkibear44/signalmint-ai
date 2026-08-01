@@ -48,6 +48,25 @@ export async function getAlphaScanner() {
   return response.json();
 }
 
+export async function getPortfolioBuilder(budget, riskTolerance) {
+  const response = await fetch(`${API_BASE}/portfolio-builder`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      budget,
+      risk_tolerance: riskTolerance,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to build portfolio allocation.");
+  }
+
+  return response.json();
+}
+
 export async function getTradePlan(coin) {
   const response = await fetch(`${API_BASE}/trade-plan`, {
     method: "POST",
