@@ -14,6 +14,7 @@ function Home() {
       <Hero />
       <Services />
       <Why />
+      <X402Docs />
       <Architecture />
       <Footer />
     </>
