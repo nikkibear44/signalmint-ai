@@ -188,4 +188,3 @@ npm run dev
 **OKX.AI Genesis Hackathon** — demonstrating how an agent-native economy works in practice, one Agent Service Provider at a time.
 
 ---
-
