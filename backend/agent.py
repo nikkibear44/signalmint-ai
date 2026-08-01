@@ -871,27 +871,33 @@ with clear headers.
 
 def find_hidden_alpha():
     """
-    Surfaces tokens where real signal strength and real whale buying
-    exist, but market cap is low (an honest proxy for "under the
-    radar" - we do NOT track actual social/narrative attention data,
-    so this is explicitly labeled as a market-cap-based proxy, not a
-    claim of measured social sentiment).
+    Surfaces tokens with real, significant whale buying activity -
+    the PRIMARY signal, not a secondary filter on top of Alpha
+    Scanner's list. Alpha Scanner only tracks large/established
+    CoinGecko-listed tokens, so gating on it first meant genuinely
+    interesting small-cap whale activity (e.g. on Robinhood Chain)
+    was invisible even when real and significant. This version
+    starts directly from the whale feeds instead.
 
-    Fetches both whale feeds ONCE (not per-candidate) for efficiency,
-    and defensively skips any malformed entries rather than crashing.
+    AI Opportunity Score is attached as bonus context ONLY if the
+    token also happens to appear in Alpha Scanner's list - it is no
+    longer a required gate.
     """
 
     from alpha_scanner import scan_alpha
     from smart_money import get_smart_money
     from robinhood_smart_money import get_robinhood_smart_money
 
-    candidates = scan_alpha()
+    # Optional bonus context - not a gate
+    alpha_scanner_lookup = {}
+    try:
+        for c in scan_alpha():
+            if isinstance(c, dict) and isinstance(c.get("symbol"), str):
+                alpha_scanner_lookup[c["symbol"].upper()] = c
+    except Exception as e:
+        print(f"[Hidden Alpha] Alpha Scanner lookup unavailable: {e}")
 
-    if not isinstance(candidates, list):
-        print(f"[Hidden Alpha] Unexpected scan_alpha() return type: {type(candidates)}")
-        candidates = []
-
-    # Fetch both whale feeds once, tagging each transaction with its chain
+    # Fetch both whale feeds, tagging each transaction with its chain
     combined_feed = []
 
     try:
@@ -908,67 +914,74 @@ def find_hidden_alpha():
     except Exception as e:
         print(f"[Hidden Alpha] Robinhood feed fetch failed: {e}")
 
-    results = []
+    # Aggregate BUY-side activity by symbol - the real, primary signal
+    aggregated = {}
 
-    for c in candidates:
-        if not isinstance(c, dict):
+    for tx, chain in combined_feed:
+        if tx.get("side") != "BUY":
             continue
 
-        if (c.get("ai_score") or 0) < 10:
-            continue
-
-        symbol = c.get("symbol")
-
+        symbol = tx.get("symbol")
         if not symbol or not isinstance(symbol, str):
             continue
 
-        buy_matches = [
-            (tx, chain)
-            for tx, chain in combined_feed
-            if isinstance(tx.get("symbol"), str)
-            and tx.get("symbol", "").upper() == symbol.upper()
-            and tx.get("side") == "BUY"
-        ]
+        key = symbol.upper()
 
-        if not buy_matches:
+        if key not in aggregated:
+            aggregated[key] = {
+                "name": tx.get("name") or symbol,
+                "symbol": symbol,
+                "buy_wallets": set(),
+                "total_buy_usd": 0,
+                "chains": set(),
+            }
+
+        aggregated[key]["buy_wallets"].add(tx.get("wallet"))
+        aggregated[key]["total_buy_usd"] += tx.get("value_usd") or 0
+        aggregated[key]["chains"].add(chain)
+
+    results = []
+
+    for key, agg in aggregated.items():
+        if agg["total_buy_usd"] <= 0:
             continue
 
-        buy_wallets = len(set(tx.get("wallet") for tx, _ in buy_matches))
-        total_buy_usd = sum(tx.get("value_usd") or 0 for tx, _ in buy_matches)
-        chains_involved = sorted(set(chain for _, chain in buy_matches))
+        alpha_match = alpha_scanner_lookup.get(key)
 
         results.append(
             {
-                "name": c.get("name"),
-                "symbol": symbol,
-                "ai_score": c.get("ai_score"),
-                "market_cap": c.get("market_cap") or 0,
-                "price": c.get("price"),
-                "change_24h": c.get("change_24h"),
-                "risk": c.get("risk"),
-                "catalyst": c.get("catalyst"),
-                "whale_buy_wallets": buy_wallets,
-                "whale_buy_usd": round(total_buy_usd, 2),
-                "whale_chains": chains_involved,
+                "name": agg["name"],
+                "symbol": agg["symbol"],
+                "ai_score": alpha_match.get("ai_score") if alpha_match else None,
+                "market_cap": (alpha_match.get("market_cap") if alpha_match else None) or 0,
+                "risk": alpha_match.get("risk") if alpha_match else None,
+                "catalyst": alpha_match.get("catalyst") if alpha_match else None,
+                "whale_buy_wallets": len(agg["buy_wallets"]),
+                "whale_buy_usd": round(agg["total_buy_usd"], 2),
+                "whale_chains": sorted(agg["chains"]),
             }
         )
 
-    # Lowest market cap first among qualifying picks - our honest
-    # "most likely overlooked" proxy.
-    results.sort(key=lambda r: r.get("market_cap") or float("inf"))
+    # Rank by total real buy volume - the actual conviction signal
+    results.sort(key=lambda r: r["whale_buy_usd"], reverse=True)
 
     top_results = results[:5]
 
-    # For just this small final list, fetch real community size data
-    # (Twitter/Reddit/Telegram followers) - cheap since it's only a
-    # handful of tokens, not the full candidate pool.
+    # For just this small final list, fetch real market cap + community
+    # size data - cheap since it's only a handful of tokens.
     for r in top_results:
         try:
-            community = get_market_data(r["symbol"])
-            r["twitter_followers"] = community.get("twitter_followers") if community else None
-            r["reddit_subscribers"] = community.get("reddit_subscribers") if community else None
+            market = get_market_data(r["symbol"])
+            if market:
+                if not r["market_cap"]:
+                    r["market_cap"] = market.get("market_cap") or 0
+                r["twitter_followers"] = market.get("twitter_followers")
+                r["reddit_subscribers"] = market.get("reddit_subscribers")
+            else:
+                r["twitter_followers"] = None
+                r["reddit_subscribers"] = None
         except Exception as e:
-            print(f"[Hidden Alpha] Community data lookup failed for {r['symbol']}: {e}")
+            print(f"[Hidden Alpha] Market/community lookup failed for {r['symbol']}: {e}")
             r["twitter_followers"] = None
             r["reddit_subscribers"] = None
 
@@ -977,44 +990,43 @@ def find_hidden_alpha():
             "success": True,
             "results": [],
             "narrative": (
-                "No tokens currently show real tracked whale buying "
-                "right now. This changes as whale activity happens - "
-                "check back later for new matches."
+                "No tracked whale wallets have made a buy recently. "
+                "This changes as whale activity happens - check back "
+                "later for new matches."
             ),
         }
 
     summary = "\n".join(
-        f"- {r['name']} ({r['symbol']}): AI Score {r['ai_score']}, "
-        f"Market Cap ${r['market_cap']:,.0f}, {r['whale_buy_wallets']} "
-        f"whale wallet(s) bought ${r['whale_buy_usd']} on {', '.join(r['whale_chains'])}, "
-        f"Twitter followers: {r.get('twitter_followers') or 'N/A'}, "
-        f"Reddit subscribers: {r.get('reddit_subscribers') or 'N/A'}, "
-        f"Catalyst: {r['catalyst']}"
+        f"- {r['name']} ({r['symbol']}): {r['whale_buy_wallets']} whale "
+        f"wallet(s) bought ${r['whale_buy_usd']} on {', '.join(r['whale_chains'])}"
+        + (f", AI Score {r['ai_score']}" if r.get("ai_score") is not None else ", not scored by Alpha Scanner")
+        + (f", Market Cap ${r['market_cap']:,.0f}" if r.get("market_cap") else "")
+        + f", Twitter followers: {r.get('twitter_followers') or 'N/A'}"
         for r in top_results
     )
 
     prompt = f"""
-You are identifying potentially overlooked crypto opportunities.
+You are identifying tokens with real, significant whale buying activity.
 
-The following tokens ALL have real, verified signals:
-- A measurable AI Opportunity Score
-- Real tracked whale wallets actively buying (not simulated)
-- Relatively low market cap compared to typical large-cap tokens
-- Twitter/Reddit follower counts (a community SIZE indicator, not
-  real-time attention or trending activity - do not describe a large
-  or small follower count as proof of current buzz)
+The following tokens have real tracked whale wallets actively buying
+(not simulated). Some also have an AI Opportunity Score from a
+separate scan, if they happened to also be tracked there - most
+small/new tokens will NOT have this score, which is normal, not a
+red flag.
 
 {summary}
 
-For each token, write 1-2 sentences on why the combination of real
-whale buying + decent market signal + low market cap makes it worth
-a closer look. Be honest: low market cap does NOT prove something is
-truly "undiscovered" by the broader market - it's a proxy, not
-certainty. Do not claim social media attention is low; we do not
-measure that. Never invent numbers not provided above.
+For each token, write 1-2 sentences on what's notable about the real
+whale buying activity. If an AI Score or market cap is available, you
+may reference it. Never invent a score, market cap, or follower count
+that says "N/A" or is missing - just skip that detail for that token.
+Twitter followers are a community SIZE indicator, not real-time
+attention - do not describe it as proof of current buzz.
 
-End with a brief overall note reminding the reader that low market
-cap also means higher risk and lower liquidity.
+End with a brief overall note: tokens without broad market coverage
+(no AI score, no widely available data) carry meaningfully higher
+risk and lower liquidity - real whale buying is a signal, not a
+guarantee.
 """
 
     narrative = ask_ai(prompt)

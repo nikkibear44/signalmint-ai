@@ -285,12 +285,12 @@ function AlphaScanner() {
             <span className="ha-badge">EXPERIMENTAL</span>
           </div>
           <p className="ha-sub">
-            Tokens with real tracked whale buying, ranked by lowest market
-            cap — our proxy for "under the radar." Includes real Twitter
-            follower counts (a community size indicator, not real-time
-            attention) where available. We don't track actual social
-            engagement/trending velocity, so this remains a proxy signal,
-            not measured sentiment.
+            Ranked by real whale buying volume across Solana and Robinhood
+            Chain — tokens don't need to be tracked by Alpha Scanner to
+            show up here. AI Score and market cap appear when available as
+            bonus context, not as a requirement. Twitter followers (where
+            available) are a community size indicator, not real-time
+            attention.
           </p>
 
           {hiddenAlphaLoading && (
@@ -317,17 +317,27 @@ function AlphaScanner() {
                         <strong>{r.name}</strong>
                         <span className="ha-item-symbol">{r.symbol}</span>
                       </div>
-                      <div className="ha-item-score">
-                        Signal: {r.ai_score}
-                      </div>
+                      {r.ai_score != null ? (
+                        <div className="ha-item-score">
+                          Signal: {r.ai_score}
+                        </div>
+                      ) : (
+                        <div className="ha-item-score ha-item-score-none">
+                          Not scored by Alpha Scanner
+                        </div>
+                      )}
                       <div className="ha-item-whale">
                         🐋 {r.whale_buy_wallets} wallet(s) bought $
                         {r.whale_buy_usd.toLocaleString()} on{" "}
                         {r.whale_chains.join(", ")}
                       </div>
-                      <div className="ha-item-cap">
-                        Market Cap: ${(r.market_cap / 1e6).toFixed(1)}M
-                      </div>
+                      {r.market_cap ? (
+                        <div className="ha-item-cap">
+                          Market Cap: ${(r.market_cap / 1e6).toFixed(1)}M
+                        </div>
+                      ) : (
+                        <div className="ha-item-cap">Market Cap: N/A</div>
+                      )}
                       {r.twitter_followers != null && (
                         <div className="ha-item-social">
                           𝕏 {r.twitter_followers.toLocaleString()} followers
