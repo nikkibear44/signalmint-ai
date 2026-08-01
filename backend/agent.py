@@ -125,9 +125,9 @@ def remove_section(report, section_name):
     return cleaned.strip()
 
 
-def crypto_analysis(query):
+def crypto_analysis(query, known_coingecko_id=None):
 
-    market = get_market_data(query.strip())
+    market = get_market_data(query.strip(), known_coingecko_id=known_coingecko_id)
 
     market_info = "No live market data available."
     source_label = "Verified CoinGecko Information"

@@ -82,6 +82,7 @@ def get_trending_tokens():
         for market in market_data:
             tokens.append(
                 {
+                    "id": market["id"],
                     "name": market["name"],
                     "symbol": market["symbol"].upper(),
                     "rank": market["market_cap_rank"],

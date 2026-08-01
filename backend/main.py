@@ -51,6 +51,7 @@ app.add_middleware(
 
 class AnalyzeRequest(BaseModel):
     query: str
+    coingecko_id: str | None = None
 
 
 class CompareRequest(BaseModel):
@@ -119,7 +120,7 @@ def analyze(data: AnalyzeRequest):
     if not data.query.strip():
         return {"error": "Query cannot be empty."}
 
-    result = crypto_analysis(data.query)
+    result = crypto_analysis(data.query, known_coingecko_id=data.coingecko_id)
 
     response = response_template("analyze")
     response.update(

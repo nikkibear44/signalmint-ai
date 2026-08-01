@@ -277,12 +277,24 @@ def _search_dexscreener(query):
         return None
 
 
-def get_market_data(query):
+def get_market_data(query, known_coingecko_id=None):
     """
     Returns rich project information. Tries CoinGecko first (broader
     fundamentals, more established tokens), falls back to DexScreener
     for very new/low-cap tokens CoinGecko hasn't indexed yet.
+
+    If known_coingecko_id is provided (e.g. from a trending card where
+    we already know the exact correct ID), skip the ambiguous
+    name/symbol search entirely and fetch that ID directly - avoids
+    the "pump" -> wrong obscure token class of bug.
     """
+
+    if known_coingecko_id:
+        try:
+            return _get_coingecko_data(known_coingecko_id)
+        except Exception as e:
+            print(f"[Market] Direct ID lookup failed for {known_coingecko_id}: {e}")
+            # fall through to normal search-based lookup below
 
     coin_id = search_coin(query)
 

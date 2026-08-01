@@ -284,7 +284,7 @@ function OpportunityRadar() {
     setLoading(false);
   }
 
-  async function analyzeTrendingToken(symbol) {
+  async function analyzeTrendingToken(symbol, coingeckoId) {
     setQuery(symbol);
 
     setLoading(true);
@@ -304,7 +304,7 @@ function OpportunityRadar() {
     setCopiedExecution(false);
 
     try {
-      const data = await analyzeToken(symbol);
+      const data = await analyzeToken(symbol, coingeckoId);
 
       setCurrentToken(symbol.toUpperCase());
 
@@ -515,7 +515,7 @@ function OpportunityRadar() {
           {trendingTokens.map((token, index) => (
             <div
               key={token.symbol}
-              onClick={() => analyzeTrendingToken(token.symbol)}
+              onClick={() => analyzeTrendingToken(token.symbol, token.id)}
               style={{
                 cursor: "pointer",
                 background: "#181818",

@@ -1,6 +1,6 @@
 const API_BASE = "https://signalmint-ai.onrender.com";
 
-export async function analyzeToken(query) {
+export async function analyzeToken(query, coingeckoId = null) {
   const response = await fetch(`${API_BASE}/analyze`, {
     method: "POST",
     headers: {
@@ -8,6 +8,7 @@ export async function analyzeToken(query) {
     },
     body: JSON.stringify({
       query,
+      coingecko_id: coingeckoId,
     }),
   });
 
