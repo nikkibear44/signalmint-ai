@@ -876,41 +876,80 @@ def find_hidden_alpha():
     radar" - we do NOT track actual social/narrative attention data,
     so this is explicitly labeled as a market-cap-based proxy, not a
     claim of measured social sentiment).
+
+    Fetches both whale feeds ONCE (not per-candidate) for efficiency,
+    and defensively skips any malformed entries rather than crashing.
     """
 
     from alpha_scanner import scan_alpha
+    from smart_money import get_smart_money
+    from robinhood_smart_money import get_robinhood_smart_money
 
     candidates = scan_alpha()
+
+    if not isinstance(candidates, list):
+        print(f"[Hidden Alpha] Unexpected scan_alpha() return type: {type(candidates)}")
+        candidates = []
+
+    # Fetch both whale feeds once, tagging each transaction with its chain
+    combined_feed = []
+
+    try:
+        for tx in get_smart_money():
+            if isinstance(tx, dict):
+                combined_feed.append((tx, "Solana"))
+    except Exception as e:
+        print(f"[Hidden Alpha] Solana feed fetch failed: {e}")
+
+    try:
+        for tx in get_robinhood_smart_money():
+            if isinstance(tx, dict):
+                combined_feed.append((tx, "Robinhood Chain"))
+    except Exception as e:
+        print(f"[Hidden Alpha] Robinhood feed fetch failed: {e}")
+
     results = []
 
     for c in candidates:
+        if not isinstance(c, dict):
+            continue
+
+        if (c.get("ai_score") or 0) < 70:
+            continue
+
         symbol = c.get("symbol")
 
-        if c.get("ai_score", 0) < 70:
+        if not symbol or not isinstance(symbol, str):
             continue
 
-        whale_activity = _get_recent_whale_activity(symbol)
+        buy_matches = [
+            (tx, chain)
+            for tx, chain in combined_feed
+            if isinstance(tx.get("symbol"), str)
+            and tx.get("symbol", "").upper() == symbol.upper()
+            and tx.get("side") == "BUY"
+        ]
 
-        has_whale_buying = bool(
-            whale_activity and whale_activity.get("buy_wallets", 0) > 0
-        )
-
-        if not has_whale_buying:
+        if not buy_matches:
             continue
+
+        buy_wallets = len(set(tx.get("wallet") for tx, _ in buy_matches))
+        total_buy_usd = sum(tx.get("value_usd") or 0 for tx, _ in buy_matches)
+        chains_involved = sorted(set(chain for _, chain in buy_matches))
 
         results.append(
             {
                 "name": c.get("name"),
                 "symbol": symbol,
                 "ai_score": c.get("ai_score"),
-                "market_cap": c.get("market_cap"),
+                "market_cap": c.get("market_cap") or 0,
                 "price": c.get("price"),
                 "change_24h": c.get("change_24h"),
                 "risk": c.get("risk"),
                 "catalyst": c.get("catalyst"),
-                "whale_buy_wallets": whale_activity.get("buy_wallets"),
-                "whale_buy_usd": whale_activity.get("total_buy_value_usd"),
-                "whale_chains": whale_activity.get("chains"),
+                "whale_buy_wallets": buy_wallets,
+                "whale_buy_usd": round(total_buy_usd, 2),
+                "whale_chains": chains_involved,
             }
         )
 
@@ -968,4 +1007,3 @@ cap also means higher risk and lower liquidity.
         "results": top_results,
         "narrative": narrative,
     }
-
