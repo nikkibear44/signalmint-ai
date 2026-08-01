@@ -394,10 +394,20 @@ def market_snapshot():
 @app.get("/alpha-scanner")
 async def alpha_scanner():
     """
-    Returns the top AI-ranked crypto opportunities.
+    Returns the top AI-ranked crypto opportunities. The top 5 picks
+    also include a real, computed entry/TP/SL trade plan - kept to
+    top 5 only for speed/cost, since each plan requires a real AI
+    call.
     """
 
     data = scan_alpha()
+
+    for pick in data[:5]:
+        try:
+            pick["trade_plan"] = generate_trade_plan(pick)
+        except Exception as e:
+            print(f"[Alpha Scanner] Trade plan generation failed for {pick.get('symbol')}: {e}")
+            pick["trade_plan"] = None
 
     response = response_template("/alpha-scanner")
     response["results"] = data

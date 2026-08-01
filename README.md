@@ -52,6 +52,10 @@ Analyzes any token and returns an AI Opportunity Score (0–100), a BUY/SELL/HOL
 ### 📊 Alpha Scanner
 Automatically scans and ranks today's highest-conviction market opportunities. Each pick opens into a full AI-generated action plan — entry zone, take profit, stop loss, holding period, and risk/reward.
 
+**💰 Portfolio Builder ("What Should I Buy With $X?")** — give it a budget and risk tolerance, and it deterministically allocates across today's top picks (percentages computed in Python, never trusted to AI math), with a "Strategy Ready" summary card (real AI-Confidence derived from actual scores, not invented) and a **Prepare Execution** button per asset, generating the same safe, ready-to-send trade instruction pattern as Opportunity Radar.
+
+**🔍 Hidden Alpha** — surfaces tokens with real, significant tracked whale buying volume across Solana and Robinhood Chain, ranked by real conviction (not gated behind Alpha Scanner's own list, so genuinely small/new tokens can surface even if they're not otherwise tracked). Shows AI Score as bonus context when available, real Twitter follower counts (explicitly labeled as community size, not real-time attention), and clickable contract addresses linking to the correct block explorer per chain.
+
 ### 🐋 Smart Money (Whale Tracker)
 Tracks real-time buy/sell activity from tracked whale wallets across **Solana** and **Robinhood Chain**, with USD-valued trades, AI-generated insight per transaction, and a "Top Smart Money Picks Today" leaderboard ranked by real buy volume and wallet count. Auto-refreshes every 30 seconds.
 
@@ -69,6 +73,10 @@ Side-by-side AI comparison of two crypto assets — market position, strengths, 
 ## Paid Services (x402 on X Layer)
 
 Two features are also available as **paid A2MCP services** on OKX.AI, gated by real x402 payment verification — tested locally and against the live production endpoint with genuine on-chain settled transactions before being registered:
+
+**Two independent payment paths, both proven working with real settled transactions:**
+1. **Agent/CLI path** — via Claude Code + Agentic Wallet, tested locally and against live production, real settled tx confirmed on-chain independently via RPC
+2. **Browser path** — any site visitor can pay directly via their own OKX Wallet. The `PayToUnlock` component constructs a real EIP-712 Permit2 signature (the exact wire format was reverse-engineered from real captured payment data, not guessed), requests the signature via the wallet's native `eth_signTypedData_v4`, and only reveals the report after the payment settles on-chain. Includes a double-payment guard that survives page reloads mid-payment. Available directly on Token Intelligence and Asset Battle.
 
 | Service | Price | Endpoint |
 |---|---|---|
@@ -119,6 +127,9 @@ Real x402 payment verification built and tested end-to-end (local + live product
 ### ✅ Phase 3 — Differentiation (shipped)
 Whale-activity cross-linking in Token Intelligence, real on-chain supply lookups for tokens without CoinGecko listings, DexScreener fallback for low-cap/new tokens, historical price context (7d/30d/1y, ATH/ATL).
 
+### ✅ Phase 3.5 — Browser payments & portfolio construction (shipped)
+Real browser-based x402 payments via OKX Wallet (not just agent/CLI). AI-driven portfolio allocation given a budget and risk tolerance, with per-asset trade execution instructions. Hidden Alpha whale-conviction detector with clickable contract addresses.
+
 ### 🔜 Phase 4 — Real social attention data
 Currently, Token Intelligence and Hidden Alpha use community size (Twitter/Reddit/Telegram follower counts, via CoinGecko) as a limited social proxy — explicitly labeled as size, not real-time attention. Genuine social attention tracking (trending velocity, sentiment, mention volume) would require a paid data source like LunarCrush, Santiment, or Twitter's API v2 — evaluated but not yet integrated given cost.
 
@@ -126,7 +137,7 @@ Currently, Token Intelligence and Hidden Alpha use community size (Twitter/Reddi
 Add x402 payment to the remaining 4 services. Explore tiered pricing and a subscription pass alongside pay-per-call.
 
 ### 🔜 Phase 6 — Deeper chain coverage
-Expand Portfolio Doctor's ERC-20 discovery to X layer mainnet and Stable Mainnet (currently native-token-only, pending a free block explorer API for that chain). Add more tracked whale wallets across both chains.
+Expand Portfolio Doctor's ERC-20 discovery to Stable Mainnet (currently native-token-only, pending a free block explorer API for that chain). Add more tracked whale wallets across both chains.
 
 ### 🔜 Phase 7 — Platform growth
 Public API access for other agents/developers to build on SignalMint's intelligence engine. Community features: shared watchlists, public leaderboards for top-performing picks.
