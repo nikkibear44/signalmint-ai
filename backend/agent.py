@@ -950,11 +950,16 @@ def find_hidden_alpha():
                 "buy_wallets": set(),
                 "total_buy_usd": 0,
                 "chains": set(),
+                "mints": {},  # chain -> contract/mint address
             }
 
         aggregated[key]["buy_wallets"].add(tx.get("wallet"))
         aggregated[key]["total_buy_usd"] += tx.get("value_usd") or 0
         aggregated[key]["chains"].add(chain)
+
+        mint = tx.get("mint")
+        if mint and chain not in aggregated[key]["mints"]:
+            aggregated[key]["mints"][chain] = mint
 
     results = []
 
@@ -975,6 +980,7 @@ def find_hidden_alpha():
                 "whale_buy_wallets": len(agg["buy_wallets"]),
                 "whale_buy_usd": round(agg["total_buy_usd"], 2),
                 "whale_chains": sorted(agg["chains"]),
+                "mints": agg["mints"],
             }
         )
 

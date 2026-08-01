@@ -46,6 +46,21 @@ function riskStyle(risk) {
   return { background: "#4d1f1f", color: "#ff6666" };
 }
 
+function haExplorerUrl(chain, mint) {
+  if (chain === "Solana") {
+    return `https://solscan.io/token/${mint}`;
+  }
+  if (chain === "Robinhood Chain") {
+    return `https://robinhoodchain.blockscout.com/token/${mint}`;
+  }
+  return null;
+}
+
+function haShortAddress(address) {
+  if (!address) return "";
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
 const RISK_OPTIONS = [
   { value: "low", label: "Low Risk" },
   { value: "medium", label: "Medium Risk" },
@@ -494,6 +509,24 @@ function AlphaScanner() {
                       {r.twitter_followers != null && (
                         <div className="ha-item-social">
                           𝕏 {r.twitter_followers.toLocaleString()} followers
+                        </div>
+                      )}
+                      {r.mints && Object.keys(r.mints).length > 0 && (
+                        <div className="ha-item-contracts">
+                          {Object.entries(r.mints).map(([chain, mint]) => {
+                            const url = haExplorerUrl(chain, mint);
+                            return url ? (
+                              <a
+                                key={chain}
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="ha-item-contract-link"
+                              >
+                                {chain}: {haShortAddress(mint)} ↗
+                              </a>
+                            ) : null;
+                          })}
                         </div>
                       )}
                     </div>
