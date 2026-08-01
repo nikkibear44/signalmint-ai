@@ -101,7 +101,7 @@ def _get_coingecko_data(coin_id):
             "localization": "false",
             "tickers": "false",
             "market_data": "true",
-            "community_data": "false",
+            "community_data": "true",
             "developer_data": "false",
             "sparkline": "false",
         },
@@ -140,6 +140,10 @@ def _get_coingecko_data(coin_id):
         "total_supply": market.get("total_supply"),
         "circulating_supply": market.get("circulating_supply"),
         "max_supply": market.get("max_supply"),
+
+        "twitter_followers": data.get("community_data", {}).get("twitter_followers"),
+        "reddit_subscribers": data.get("community_data", {}).get("reddit_subscribers"),
+        "telegram_users": data.get("community_data", {}).get("telegram_channel_user_count"),
 
         "genesis_date": data.get("genesis_date"),
         "coingecko_rank": data.get("market_cap_rank"),

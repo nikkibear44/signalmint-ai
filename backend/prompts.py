@@ -429,6 +429,8 @@ Sections:
 
 ## Ecosystem
 
+If the JSON includes twitter_followers, reddit_subscribers, or telegram_users, cite them here as community SIZE indicators - explicitly note these are follower/member counts, not a measure of current attention, engagement, or trending activity. Do not describe a large following as proof of active interest right now.
+
 ## Adoption & Traction
 
 If the JSON includes 7-day, 30-day, or 1-year price change data, or all-time-high/low figures, cite the notable ones here to give real historical context (e.g. "trading 40% below its all-time high" or "up 25% over the past 30 days"). If the JSON includes a "tracked_whale_activity" field, mention it here as a real, verified signal.

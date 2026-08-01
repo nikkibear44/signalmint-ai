@@ -78,6 +78,22 @@ def collect_project_data(project):
             "verified": True
         },
 
+        "twitter_followers": {
+            "value": cg.get("twitter_followers") if cg else None,
+            "verified": True,
+            "note": "Follower count is a static community size metric, not real-time attention/buzz."
+        },
+
+        "reddit_subscribers": {
+            "value": cg.get("reddit_subscribers") if cg else None,
+            "verified": True
+        },
+
+        "telegram_users": {
+            "value": cg.get("telegram_users") if cg else None,
+            "verified": True
+        },
+
         "tvl": {
             "current": dl.get("tvl") if dl else None,
             "historical_available": False
