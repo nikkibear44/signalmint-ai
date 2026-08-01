@@ -52,6 +52,20 @@ const RISK_OPTIONS = [
   { value: "high", label: "High Risk" },
 ];
 
+function buildAllocationExecutionInstruction(allocation) {
+  return `I'd like to execute a trade based on this AI-generated portfolio allocation from SignalMint AI.
+
+Token: ${allocation.name} (${allocation.symbol})
+Allocation: ${allocation.allocation_pct}% of portfolio
+Amount: ~$${allocation.allocation_usd} USDT0
+Current Price: $${allocation.price}
+AI Score: ${allocation.ai_score}
+Risk: ${allocation.risk}
+Reason: ${allocation.catalyst}
+
+Please check whether ${allocation.symbol} and its chain are supported by OKX DEX before proceeding. If supported, use the OKX Agent Payments Protocol / OKX DEX to execute this swap on my behalf, using my own connected wallet. Confirm the trade details with me before signing anything. If ${allocation.symbol} or its chain is not supported by OKX DEX, let me know instead of attempting the trade.`;
+}
+
 function AlphaScanner() {
   const [loading, setLoading] = useState(true);
   const [coins, setCoins] = useState([]);
@@ -64,6 +78,8 @@ function AlphaScanner() {
   const [buildLoading, setBuildLoading] = useState(false);
   const [buildResult, setBuildResult] = useState(null);
   const [buildError, setBuildError] = useState("");
+  const [expandedExecution, setExpandedExecution] = useState(null);
+  const [copiedExecution, setCopiedExecution] = useState(null);
 
   // Hidden Alpha state
   const [hiddenAlpha, setHiddenAlpha] = useState(null);
@@ -96,6 +112,8 @@ function AlphaScanner() {
     setBuildLoading(true);
     setBuildError("");
     setBuildResult(null);
+    setExpandedExecution(null);
+    setCopiedExecution(null);
 
     try {
       const data = await getPortfolioBuilder(amount, riskTolerance);
@@ -295,6 +313,48 @@ function AlphaScanner() {
                       <span>AI Score {a.ai_score}</span>
                       <span>{a.risk} Risk</span>
                     </div>
+
+                    <button
+                      className="pb-execute-btn"
+                      onClick={() =>
+                        setExpandedExecution(
+                          expandedExecution === a.symbol ? null : a.symbol
+                        )
+                      }
+                    >
+                      🚀{" "}
+                      {expandedExecution === a.symbol
+                        ? "Hide Execution"
+                        : "Prepare Execution"}
+                    </button>
+
+                    {expandedExecution === a.symbol && (
+                      <div className="pb-execute-box">
+                        <pre className="pb-execute-text">
+                          {buildAllocationExecutionInstruction(a)}
+                        </pre>
+                        <button
+                          className="pb-copy-btn"
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              buildAllocationExecutionInstruction(a)
+                            );
+                            setCopiedExecution(a.symbol);
+                            setTimeout(() => setCopiedExecution(null), 2000);
+                          }}
+                        >
+                          {copiedExecution === a.symbol
+                            ? "✓ Copied"
+                            : "📋 Copy Instruction"}
+                        </button>
+                        <p className="pb-execute-disclaimer">
+                          SignalMint AI does not hold funds or execute
+                          trades itself. This copies a ready-to-send
+                          instruction for your own agent to execute using
+                          your own connected wallet.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
