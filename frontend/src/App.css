@@ -3059,3 +3059,164 @@ footer {
   letter-spacing: 0.5px;
   flex-shrink: 0;
 }
+
+/* ---------- ARCHITECTURE: REDESIGNED DIAGRAM ---------- */
+
+.arch-diagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.arch-sources-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.arch-source-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 14px;
+  color: #ccc;
+  transition: 0.2s;
+}
+
+.arch-source-pill svg {
+  color: #2ee6b8;
+  flex-shrink: 0;
+}
+
+.arch-source-pill:hover {
+  border-color: rgba(46, 230, 184, 0.4);
+  color: #fff;
+}
+
+.arch-connector-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(
+    to bottom,
+    rgba(46, 230, 184, 0.4),
+    rgba(46, 230, 184, 0.05)
+  );
+}
+
+.arch-engine-node {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.arch-engine-pulse {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.arch-engine-pulse .signal-ring {
+  border-color: rgba(46, 230, 184, 0.3);
+}
+
+.arch-engine-pulse .signal-ring-1,
+.arch-engine-pulse .signal-ring-2,
+.arch-engine-pulse .signal-ring-3 {
+  width: 100px;
+  height: 100px;
+}
+
+.arch-engine-content {
+  position: relative;
+  z-index: 1;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(46, 230, 184, 0.12),
+    rgba(17, 17, 17, 0.9)
+  );
+  border: 1px solid rgba(46, 230, 184, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  box-shadow: 0 0 40px rgba(46, 230, 184, 0.15);
+}
+
+.arch-engine-icon {
+  color: #2ee6b8;
+  margin-bottom: 8px;
+}
+
+.arch-engine-content h3 {
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: #fff;
+}
+
+.arch-engine-content p {
+  font-size: 12px;
+  color: #999;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.arch-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.arch-feature-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ccc;
+  transition: 0.25s;
+}
+
+.arch-feature-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(46, 230, 184, 0.35);
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3), 0 0 20px rgba(46, 230, 184, 0.08);
+}
+
+.arch-feature-icon {
+  color: #2ee6b8;
+}
+
+@media (max-width: 640px) {
+  .arch-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
