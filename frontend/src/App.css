@@ -2836,3 +2836,64 @@ footer {
   text-transform: uppercase;
   margin-bottom: 10px;
 }
+
+/* ==========================================================
+   GLASSMORPHISM UPGRADE — applied globally to existing cards
+   Overrides the flat #111/#222 look with translucent blur,
+   soft shadow, and a subtle light border. No JSX changes needed
+   since these target the same selectors already in use.
+   ========================================================== */
+
+.dash-card,
+.service-card,
+.why-card,
+.flow-box,
+.sm-pick-card,
+.sm-table-wrap,
+.as-card,
+.as-stat-card,
+.pd-summary-card,
+.pd-holdings,
+.pd-narrative-card,
+.pd-connect-card,
+.pd-risk-note,
+.ti-search-card,
+.ti-report-card,
+.ti-loading-card,
+.ab-search-card,
+.ab-report-card,
+.ab-loading-card,
+.oc-decision-card,
+.oc-execution-card,
+.tdm-modal,
+.glass-card,
+.dashboard-section {
+  background: rgba(255, 255, 255, 0.035) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Cards that hover-lift already (dash-card, service-card, why-card,
+   as-card, sm-pick-card) get a slightly brighter glass + glow on hover */
+
+.dash-card-link:hover .dash-card,
+.service-card:hover,
+.why-card:hover,
+.as-card:hover,
+.sm-pick-card:hover,
+.flow-box:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(46, 230, 184, 0.3) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 24px rgba(46, 230, 184, 0.08);
+}
+
+/* Sidebar gets a subtle glass treatment too, distinct from pure black */
+
+.sidebar {
+  background: rgba(17, 17, 17, 0.6) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
