@@ -285,11 +285,10 @@ function AlphaScanner() {
             <span className="ha-badge">EXPERIMENTAL</span>
           </div>
           <p className="ha-sub">
-            Tokens with a strong AI signal AND real tracked whale buying,
-            ranked by lowest market cap — our proxy for "under the radar."
-            We don't track actual social/narrative attention data, so this
-            is a market-cap-based signal, not a claim of measured
-            sentiment.
+            Tokens with real tracked whale buying, ranked by lowest market
+            cap — our proxy for "under the radar." We don't track actual
+            social/narrative attention data, so this is a market-cap-based
+            signal, not a claim of measured sentiment.
           </p>
 
           {hiddenAlphaLoading && (

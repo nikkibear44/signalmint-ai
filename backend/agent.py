@@ -914,7 +914,7 @@ def find_hidden_alpha():
         if not isinstance(c, dict):
             continue
 
-        if (c.get("ai_score") or 0) < 70:
+        if (c.get("ai_score") or 0) < 10:
             continue
 
         symbol = c.get("symbol")
@@ -983,7 +983,7 @@ def find_hidden_alpha():
 You are identifying potentially overlooked crypto opportunities.
 
 The following tokens ALL have real, verified signals:
-- A strong AI Opportunity Score (70+)
+- A measurable AI Opportunity Score
 - Real tracked whale wallets actively buying (not simulated)
 - Relatively low market cap compared to typical large-cap tokens
 
@@ -1007,3 +1007,5 @@ cap also means higher risk and lower liquidity.
         "results": top_results,
         "narrative": narrative,
     }
+
+
