@@ -61,30 +61,42 @@ def search_coin(query):
 
         q = query.lower().strip()
 
+        def best_ranked(candidates):
+            """
+            Among multiple matches at the same tier, prefer the one with
+            the lowest (best) market_cap_rank - avoids picking an obscure
+            token that happens to share a name/symbol with a major one.
+            Coins with no rank at all are treated as worst-ranked.
+            """
+            ranked = [c for c in candidates if c.get("market_cap_rank")]
+            if ranked:
+                return min(ranked, key=lambda c: c["market_cap_rank"])["id"]
+            return candidates[0]["id"]
+
         # 1. Exact CoinGecko ID
-        for coin in coins:
-            if coin["id"].lower() == q:
-                return coin["id"]
+        exact_id_matches = [c for c in coins if c["id"].lower() == q]
+        if exact_id_matches:
+            return best_ranked(exact_id_matches)
 
         # 2. Exact project name
-        for coin in coins:
-            if coin["name"].lower() == q:
-                return coin["id"]
+        exact_name_matches = [c for c in coins if c["name"].lower() == q]
+        if exact_name_matches:
+            return best_ranked(exact_name_matches)
 
         # 3. Exact symbol
-        for coin in coins:
-            if coin["symbol"].lower() == q:
-                return coin["id"]
+        exact_symbol_matches = [c for c in coins if c["symbol"].lower() == q]
+        if exact_symbol_matches:
+            return best_ranked(exact_symbol_matches)
 
         # 4. Starts-with project name
-        for coin in coins:
-            if coin["name"].lower().startswith(q):
-                return coin["id"]
+        name_prefix_matches = [c for c in coins if c["name"].lower().startswith(q)]
+        if name_prefix_matches:
+            return best_ranked(name_prefix_matches)
 
         # 5. Starts-with symbol
-        for coin in coins:
-            if coin["symbol"].lower().startswith(q):
-                return coin["id"]
+        symbol_prefix_matches = [c for c in coins if c["symbol"].lower().startswith(q)]
+        if symbol_prefix_matches:
+            return best_ranked(symbol_prefix_matches)
 
         # 6. Fallback
         return coins[0]["id"]

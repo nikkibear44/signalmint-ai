@@ -614,6 +614,7 @@ function OpportunityRadar() {
             placeholder="e.g. SOL, ETH, BTC"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
             style={{
               flex: 1,
               padding: "14px",
@@ -659,7 +660,11 @@ function OpportunityRadar() {
 
               <MetricCard
                 title="24h Change"
-                value={`${market.change_24h?.toFixed(2)}%`}
+                value={
+                  market.change_24h != null
+                    ? `${market.change_24h.toFixed(2)}%`
+                    : "N/A"
+                }
               />
 
               <MetricCard
