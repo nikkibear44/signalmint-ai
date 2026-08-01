@@ -286,9 +286,11 @@ function AlphaScanner() {
           </div>
           <p className="ha-sub">
             Tokens with real tracked whale buying, ranked by lowest market
-            cap — our proxy for "under the radar." We don't track actual
-            social/narrative attention data, so this is a market-cap-based
-            signal, not a claim of measured sentiment.
+            cap — our proxy for "under the radar." Includes real Twitter
+            follower counts (a community size indicator, not real-time
+            attention) where available. We don't track actual social
+            engagement/trending velocity, so this remains a proxy signal,
+            not measured sentiment.
           </p>
 
           {hiddenAlphaLoading && (
@@ -326,6 +328,11 @@ function AlphaScanner() {
                       <div className="ha-item-cap">
                         Market Cap: ${(r.market_cap / 1e6).toFixed(1)}M
                       </div>
+                      {r.twitter_followers != null && (
+                        <div className="ha-item-social">
+                          𝕏 {r.twitter_followers.toLocaleString()} followers
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

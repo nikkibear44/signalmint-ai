@@ -959,6 +959,19 @@ def find_hidden_alpha():
 
     top_results = results[:5]
 
+    # For just this small final list, fetch real community size data
+    # (Twitter/Reddit/Telegram followers) - cheap since it's only a
+    # handful of tokens, not the full candidate pool.
+    for r in top_results:
+        try:
+            community = get_market_data(r["symbol"])
+            r["twitter_followers"] = community.get("twitter_followers") if community else None
+            r["reddit_subscribers"] = community.get("reddit_subscribers") if community else None
+        except Exception as e:
+            print(f"[Hidden Alpha] Community data lookup failed for {r['symbol']}: {e}")
+            r["twitter_followers"] = None
+            r["reddit_subscribers"] = None
+
     if not top_results:
         return {
             "success": True,
@@ -974,6 +987,8 @@ def find_hidden_alpha():
         f"- {r['name']} ({r['symbol']}): AI Score {r['ai_score']}, "
         f"Market Cap ${r['market_cap']:,.0f}, {r['whale_buy_wallets']} "
         f"whale wallet(s) bought ${r['whale_buy_usd']} on {', '.join(r['whale_chains'])}, "
+        f"Twitter followers: {r.get('twitter_followers') or 'N/A'}, "
+        f"Reddit subscribers: {r.get('reddit_subscribers') or 'N/A'}, "
         f"Catalyst: {r['catalyst']}"
         for r in top_results
     )
@@ -985,6 +1000,9 @@ The following tokens ALL have real, verified signals:
 - A measurable AI Opportunity Score
 - Real tracked whale wallets actively buying (not simulated)
 - Relatively low market cap compared to typical large-cap tokens
+- Twitter/Reddit follower counts (a community SIZE indicator, not
+  real-time attention or trending activity - do not describe a large
+  or small follower count as proof of current buzz)
 
 {summary}
 
