@@ -25,6 +25,7 @@ from agent import (
     due_diligence_premium,
     compare_tokens_premium,
     build_portfolio_allocation,
+    find_hidden_alpha,
 )
 
 from router import detect_intent
@@ -421,6 +422,24 @@ def portfolio_builder(data: PortfolioBuilderRequest):
         return {
             "success": False,
             "message": "Unable to build portfolio allocation.",
+        }
+
+
+# ===========================
+# Hidden Alpha
+# ===========================
+
+@app.get("/hidden-alpha")
+def hidden_alpha():
+
+    try:
+        return find_hidden_alpha()
+    except Exception as e:
+        print(f"[Hidden Alpha Error] {e}")
+
+        return {
+            "success": False,
+            "message": "Unable to find hidden alpha right now.",
         }
 
 

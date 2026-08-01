@@ -868,3 +868,104 @@ with clear headers.
         "narrative": narrative,
     }
 
+
+def find_hidden_alpha():
+    """
+    Surfaces tokens where real signal strength and real whale buying
+    exist, but market cap is low (an honest proxy for "under the
+    radar" - we do NOT track actual social/narrative attention data,
+    so this is explicitly labeled as a market-cap-based proxy, not a
+    claim of measured social sentiment).
+    """
+
+    from alpha_scanner import scan_alpha
+
+    candidates = scan_alpha()
+    results = []
+
+    for c in candidates:
+        symbol = c.get("symbol")
+
+        if c.get("ai_score", 0) < 70:
+            continue
+
+        whale_activity = _get_recent_whale_activity(symbol)
+
+        has_whale_buying = bool(
+            whale_activity and whale_activity.get("buy_wallets", 0) > 0
+        )
+
+        if not has_whale_buying:
+            continue
+
+        results.append(
+            {
+                "name": c.get("name"),
+                "symbol": symbol,
+                "ai_score": c.get("ai_score"),
+                "market_cap": c.get("market_cap"),
+                "price": c.get("price"),
+                "change_24h": c.get("change_24h"),
+                "risk": c.get("risk"),
+                "catalyst": c.get("catalyst"),
+                "whale_buy_wallets": whale_activity.get("buy_wallets"),
+                "whale_buy_usd": whale_activity.get("total_buy_value_usd"),
+                "whale_chains": whale_activity.get("chains"),
+            }
+        )
+
+    # Lowest market cap first among qualifying picks - our honest
+    # "most likely overlooked" proxy.
+    results.sort(key=lambda r: r.get("market_cap") or float("inf"))
+
+    top_results = results[:5]
+
+    if not top_results:
+        return {
+            "success": True,
+            "results": [],
+            "narrative": (
+                "No tokens currently show both a strong AI signal and "
+                "real tracked whale buying at the same time. This is "
+                "expected most of the time - genuine overlaps are rare "
+                "by design."
+            ),
+        }
+
+    summary = "\n".join(
+        f"- {r['name']} ({r['symbol']}): AI Score {r['ai_score']}, "
+        f"Market Cap ${r['market_cap']:,.0f}, {r['whale_buy_wallets']} "
+        f"whale wallet(s) bought ${r['whale_buy_usd']} on {', '.join(r['whale_chains'])}, "
+        f"Catalyst: {r['catalyst']}"
+        for r in top_results
+    )
+
+    prompt = f"""
+You are identifying potentially overlooked crypto opportunities.
+
+The following tokens ALL have real, verified signals:
+- A strong AI Opportunity Score (70+)
+- Real tracked whale wallets actively buying (not simulated)
+- Relatively low market cap compared to typical large-cap tokens
+
+{summary}
+
+For each token, write 1-2 sentences on why the combination of real
+whale buying + decent market signal + low market cap makes it worth
+a closer look. Be honest: low market cap does NOT prove something is
+truly "undiscovered" by the broader market - it's a proxy, not
+certainty. Do not claim social media attention is low; we do not
+measure that. Never invent numbers not provided above.
+
+End with a brief overall note reminding the reader that low market
+cap also means higher risk and lower liquidity.
+"""
+
+    narrative = ask_ai(prompt)
+
+    return {
+        "success": True,
+        "results": top_results,
+        "narrative": narrative,
+    }
+

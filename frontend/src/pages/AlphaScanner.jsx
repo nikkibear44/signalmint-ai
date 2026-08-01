@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import DashboardLayout from "../layouts/DashboardLayout";
-import { getAlphaScanner, getPortfolioBuilder } from "../services/api";
+import { getAlphaScanner, getPortfolioBuilder, getHiddenAlpha } from "../services/api";
 import TokenDetailModal from "../components/TokenDetailModal";
 import SignalLoader from "../components/SignalLoader";
 
@@ -65,6 +65,11 @@ function AlphaScanner() {
   const [buildResult, setBuildResult] = useState(null);
   const [buildError, setBuildError] = useState("");
 
+  // Hidden Alpha state
+  const [hiddenAlpha, setHiddenAlpha] = useState(null);
+  const [hiddenAlphaLoading, setHiddenAlphaLoading] = useState(true);
+  const [hiddenAlphaError, setHiddenAlphaError] = useState("");
+
   async function loadScanner() {
     try {
       setLoading(true);
@@ -107,8 +112,28 @@ function AlphaScanner() {
     setBuildLoading(false);
   }
 
+  async function loadHiddenAlpha() {
+    setHiddenAlphaLoading(true);
+    setHiddenAlphaError("");
+
+    try {
+      const data = await getHiddenAlpha();
+
+      if (data.success) {
+        setHiddenAlpha(data);
+      } else {
+        setHiddenAlphaError(data.message || "Unable to load Hidden Alpha.");
+      }
+    } catch (err) {
+      setHiddenAlphaError("Unable to connect to SignalMint AI.");
+    }
+
+    setHiddenAlphaLoading(false);
+  }
+
   useEffect(() => {
     loadScanner();
+    loadHiddenAlpha();
   }, []);
 
   return (
@@ -250,6 +275,73 @@ function AlphaScanner() {
                 conditions change.
               </p>
             </div>
+          )}
+        </div>
+
+        {/* Hidden Alpha */}
+        <div className="ha-card">
+          <div className="ha-header">
+            <h3>🔍 Hidden Alpha — Overlooked Opportunities</h3>
+            <span className="ha-badge">EXPERIMENTAL</span>
+          </div>
+          <p className="ha-sub">
+            Tokens with a strong AI signal AND real tracked whale buying,
+            ranked by lowest market cap — our proxy for "under the radar."
+            We don't track actual social/narrative attention data, so this
+            is a market-cap-based signal, not a claim of measured
+            sentiment.
+          </p>
+
+          {hiddenAlphaLoading && (
+            <SignalLoader text="Cross-referencing AI signals with real whale activity..." />
+          )}
+
+          {!hiddenAlphaLoading && hiddenAlphaError && (
+            <p className="pb-error">{hiddenAlphaError}</p>
+          )}
+
+          {!hiddenAlphaLoading && hiddenAlpha && (
+            <>
+              {hiddenAlpha.results.length === 0 ? (
+                <div className="ha-empty">
+                  No qualifying overlaps right now — this is expected most
+                  of the time, since genuine matches (high AI score + real
+                  whale buying) are rare by design.
+                </div>
+              ) : (
+                <div className="ha-grid">
+                  {hiddenAlpha.results.map((r) => (
+                    <div key={r.symbol} className="ha-item-card">
+                      <div className="ha-item-header">
+                        <strong>{r.name}</strong>
+                        <span className="ha-item-symbol">{r.symbol}</span>
+                      </div>
+                      <div className="ha-item-score">
+                        Signal: {r.ai_score}
+                      </div>
+                      <div className="ha-item-whale">
+                        🐋 {r.whale_buy_wallets} wallet(s) bought $
+                        {r.whale_buy_usd.toLocaleString()} on{" "}
+                        {r.whale_chains.join(", ")}
+                      </div>
+                      <div className="ha-item-cap">
+                        Market Cap: ${(r.market_cap / 1e6).toFixed(1)}M
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {hiddenAlpha.narrative && (
+                <div className="ha-narrative">
+                  <div className="ai-report">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {hiddenAlpha.narrative}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 

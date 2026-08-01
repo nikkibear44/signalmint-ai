@@ -3464,3 +3464,107 @@ footer {
     rgba(46, 230, 184, 0.1)
   );
 }
+
+/* ---------- HIDDEN ALPHA ---------- */
+
+.ha-card {
+  background: rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 209, 102, 0.2);
+  border-radius: 18px;
+  padding: 26px;
+  margin-bottom: 32px;
+}
+
+.ha-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.ha-header h3 {
+  margin: 0;
+}
+
+.ha-badge {
+  background: rgba(255, 209, 102, 0.12);
+  color: #f4a833;
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.ha-sub {
+  color: #999;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  max-width: 720px;
+}
+
+.ha-empty {
+  color: #888;
+  text-align: center;
+  padding: 24px;
+  background: #161616;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.ha-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.ha-item-card {
+  background: #161616;
+  border: 1px solid #222;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.ha-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.ha-item-symbol {
+  color: #888;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.ha-item-score {
+  color: #f4a833;
+  font-weight: 800;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.ha-item-whale {
+  color: #ccc;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.ha-item-cap {
+  color: #888;
+  font-size: 12px;
+}
+
+.ha-narrative {
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 16px;
+  padding: 22px;
+}

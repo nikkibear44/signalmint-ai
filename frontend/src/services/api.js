@@ -48,6 +48,16 @@ export async function getAlphaScanner() {
   return response.json();
 }
 
+export async function getHiddenAlpha() {
+  const response = await fetch(`${API_BASE}/hidden-alpha`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch Hidden Alpha.");
+  }
+
+  return response.json();
+}
+
 export async function getPortfolioBuilder(budget, riskTolerance) {
   const response = await fetch(`${API_BASE}/portfolio-builder`, {
     method: "POST",
