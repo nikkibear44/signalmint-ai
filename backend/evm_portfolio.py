@@ -47,7 +47,19 @@ CHAINS = {
 }
 
 
-def _rpc_call(rpc_url, method, params):
+# Symbols that should be pegged near $1 if genuine - used to flag
+# likely scam tokens impersonating a real stablecoin's name/symbol.
+STABLECOIN_SYMBOLS = {"USDT", "USDC", "USDG", "DAI", "BUSD", "USDT0", "USDE"}
+
+
+def _is_likely_fake_stablecoin(symbol, price):
+    if symbol.upper() not in STABLECOIN_SYMBOLS:
+        return False
+    if price <= 0:
+        return False
+    # A genuine stablecoin should be close to $1 - flag if off by more
+    # than 20%, a strong signal of a scam token reusing the same name.
+    return price < 0.80 or price > 1.20
     try:
         response = requests.post(
             rpc_url,
@@ -240,10 +252,14 @@ def get_evm_portfolio(chain_key, address):
                 {
                     "symbol": token["symbol"],
                     "name": token["name"],
+                    "contract_address": token["contract_address"],
                     "amount": token["amount"],
                     "price_usd": price,
                     "value_usd": value_usd,
                     "price_unavailable": price == 0,
+                    "possible_scam_token": _is_likely_fake_stablecoin(
+                        token["symbol"], price
+                    ),
                 }
             )
             total_value += value_usd
@@ -262,11 +278,20 @@ def get_evm_portfolio(chain_key, address):
         try:
             lines = [
                 f"{h['symbol']} (${h['value_usd']}, {h['allocation_pct']}%)"
+                + (" [WARNING: price far from $1 despite stablecoin-like name - likely a scam token impersonating a real stablecoin, not the genuine asset]" if h.get("possible_scam_token") else "")
                 for h in holdings
             ]
             summary_text = (
                 f"Wallet on {chain['name']} holds {len(holdings)} asset(s) "
                 f"worth ${round(total_value, 2)} total: " + ", ".join(lines) + "."
+                + (
+                    " Some holdings are flagged as possible scam tokens impersonating "
+                    "a real stablecoin's name - explicitly warn the user about these "
+                    "specific flagged tokens, and note that the contract address should "
+                    "be checked against the official token before trusting it."
+                    if any(h.get("possible_scam_token") for h in holdings)
+                    else ""
+                )
             )
             ai_narrative = portfolio_review(summary_text)
         except Exception as e:
