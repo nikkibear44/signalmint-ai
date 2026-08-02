@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
+import json as _json
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 import x402_payment
@@ -43,6 +44,63 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def render_response(request, data):
+    """
+    Returns a nicely formatted, branded HTML page if the request came from a
+    browser (Accept header includes text/html) - otherwise returns normal
+    JSON, completely unchanged for real API/agent callers.
+    """
+
+    accept = request.headers.get("accept", "")
+
+    if "text/html" not in accept:
+        return data
+
+    pretty_json = _json.dumps(data, indent=2, default=str)
+
+    html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SignalMint AI - API Response</title>
+  <style>
+    body {{
+      background: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'SF Mono', Consolas, monospace;
+      padding: 32px;
+      margin: 0;
+    }}
+    .header {{
+      color: #2ee6b8;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }}
+    pre {{
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 14px;
+      padding: 24px;
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }}
+  </style>
+</head>
+<body>
+  <div class="header">⚡ SignalMint AI — API Response</div>
+  <pre>{pretty_json}</pre>
+</body>
+</html>
+"""
+
+    return HTMLResponse(content=html)
 
 
 # ===========================
@@ -371,20 +429,20 @@ def smart_query(data: QueryRequest):
 # ===========================
 
 @app.get("/market-snapshot")
-def market_snapshot():
+def market_snapshot(request: Request):
 
     data = get_global_market()
 
     if not data:
-        return {
+        return render_response(request, {
             "success": False,
             "message": "Unable to fetch market snapshot."
-        }
+        })
 
-    return {
+    return render_response(request, {
         "success": True,
         "data": data
-    }
+    })
 
 
 # ===========================
@@ -392,7 +450,7 @@ def market_snapshot():
 # ===========================
 
 @app.get("/alpha-scanner")
-async def alpha_scanner():
+async def alpha_scanner(request: Request):
     """
     Returns the top AI-ranked crypto opportunities. The top 5 picks
     also include a real, computed entry/TP/SL trade plan - kept to
@@ -412,7 +470,7 @@ async def alpha_scanner():
     response = response_template("/alpha-scanner")
     response["results"] = data
 
-    return response
+    return render_response(request, response)
 
 
 # ===========================
@@ -441,17 +499,17 @@ def portfolio_builder(data: PortfolioBuilderRequest):
 # ===========================
 
 @app.get("/hidden-alpha")
-def hidden_alpha():
+def hidden_alpha(request: Request):
 
     try:
-        return find_hidden_alpha()
+        return render_response(request, find_hidden_alpha())
     except Exception as e:
         print(f"[Hidden Alpha Error] {e}")
 
-        return {
+        return render_response(request, {
             "success": False,
             "message": "Unable to find hidden alpha right now.",
-        }
+        })
 
 
 # ===========================
@@ -474,12 +532,12 @@ def trade_plan(data: TradePlanRequest):
 # ===========================
 
 @app.get("/trending")
-def trending():
+def trending(request: Request):
 
-    return {
+    return render_response(request, {
         "success": True,
         "data": get_trending_tokens(),
-    }
+    })
 
 
 # ===========================
@@ -487,12 +545,12 @@ def trending():
 # ===========================
 
 @app.get("/smart-money")
-def smart_money():
+def smart_money(request: Request):
 
-    return {
+    return render_response(request, {
         "success": True,
         "results": get_smart_money(),
-    }
+    })
 
 
 # ===========================
@@ -500,20 +558,20 @@ def smart_money():
 # ===========================
 
 @app.get("/robinhood-smart-money")
-def robinhood_smart_money():
+def robinhood_smart_money(request: Request):
 
     try:
-        return {
+        return render_response(request, {
             "success": True,
             "results": get_robinhood_smart_money(),
-        }
+        })
     except Exception as e:
         print(f"[Robinhood Smart Money Error] {e}")
 
-        return {
+        return render_response(request, {
             "success": False,
             "message": "Unable to fetch Robinhood Chain smart money feed.",
-        }
+        })
 
 
 # ===========================
@@ -521,25 +579,25 @@ def robinhood_smart_money():
 # ===========================
 
 @app.get("/wallet-portfolio/{address}")
-def wallet_portfolio(address: str):
+def wallet_portfolio(address: str, request: Request):
 
     if not address.strip():
-        return {"success": False, "message": "Wallet address is required."}
+        return render_response(request, {"success": False, "message": "Wallet address is required."})
 
     try:
         data = get_wallet_portfolio(address)
 
-        return {
+        return render_response(request, {
             "success": True,
             "data": data,
-        }
+        })
     except Exception as e:
         print(f"[Wallet Portfolio Error] {e}")
 
-        return {
+        return render_response(request, {
             "success": False,
             "message": "Unable to fetch wallet portfolio.",
-        }
+        })
 
 
 # ===========================
@@ -547,17 +605,17 @@ def wallet_portfolio(address: str):
 # ===========================
 
 @app.get("/evm-portfolio/{chain}/{address}")
-def evm_portfolio(chain: str, address: str):
+def evm_portfolio(chain: str, address: str, request: Request):
 
     if not address.strip():
-        return {"success": False, "message": "Wallet address is required."}
+        return render_response(request, {"success": False, "message": "Wallet address is required."})
 
     try:
-        return get_evm_portfolio(chain, address)
+        return render_response(request, get_evm_portfolio(chain, address))
     except Exception as e:
         print(f"[EVM Portfolio Error] {e}")
 
-        return {
+        return render_response(request, {
             "success": False,
             "message": "Unable to fetch EVM wallet portfolio.",
-        }
+        })
