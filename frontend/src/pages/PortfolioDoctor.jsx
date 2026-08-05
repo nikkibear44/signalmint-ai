@@ -5,6 +5,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import SignalLoader from "../components/SignalLoader";
 import { useWallet } from "../context/WalletContext";
 import { getWalletPortfolio, getEvmPortfolio } from "../services/api";
+import PayToUnlock from "../components/PayToUnlock";
 
 const CHAINS = [
   { key: "solana", label: "Solana", badgeColor: "#9945FF", badgeLetter: "S" },
@@ -32,6 +33,7 @@ function PortfolioDoctor() {
   const [portfolio, setPortfolio] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [premiumReport, setPremiumReport] = useState(null);
 
   const isEvmChain = selectedChain !== "solana";
   const activeAddress = isEvmChain ? evmAddress : address;
@@ -39,6 +41,7 @@ function PortfolioDoctor() {
   useEffect(() => {
     setPortfolio(null);
     setError("");
+    setPremiumReport(null);
 
     if (!activeAddress) return;
 
@@ -195,6 +198,49 @@ function PortfolioDoctor() {
               </div>
               <div className="ai-report">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{portfolio.ai_narrative}</ReactMarkdown>
+              </div>
+            </div>
+          )}
+
+          <div className="pd-search-card" style={{ marginTop: 20 }}>
+            <h3>Or Pay to Unlock — Premium Wallet Health Report (0.05 USDT0)</h3>
+            <p>
+              Deeper analysis via a stronger AI model — includes specific
+              rebalancing suggestions, comprehensive scam-token
+              cross-referencing across all your holdings, and a
+              concentration risk assessment not in the free report. Paid
+              via x402 on X Layer, verified on-chain.
+            </p>
+            <PayToUnlock
+              key={selectedChain + "-" + activeAddress}
+              endpoint="/x402/portfolio-health"
+              requestBody={{ chain: selectedChain, address: activeAddress }}
+              dryRun={false}
+              showResult={false}
+              onSuccess={(data) => {
+                setPremiumReport(data.report || null);
+              }}
+            />
+          </div>
+
+          {premiumReport && premiumReport.success && (
+            <div className="pd-narrative-card" style={{ marginTop: 20 }}>
+              <div className="pd-narrative-label">
+                💎 Premium Wallet Health Report
+              </div>
+              {premiumReport.flagged_count > 0 && (
+                <div className="pd-risk-note" style={{ marginBottom: 16 }}>
+                  <strong style={{ color: "#ff6666" }}>
+                    ⚠️ {premiumReport.flagged_count} possible scam token(s)
+                    detected —{" "}
+                  </strong>
+                  see details below.
+                </div>
+              )}
+              <div className="ai-report">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {premiumReport.narrative}
+                </ReactMarkdown>
               </div>
             </div>
           )}

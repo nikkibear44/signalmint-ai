@@ -524,10 +524,12 @@ def _get_recent_whale_activity(symbol):
 def due_diligence(user_query):
     import json
 
-    project = extract_project_name(user_query)
-
-    if project.upper() == "UNKNOWN":
-        project = user_query  # fall back to raw input as a last resort
+    if _looks_like_natural_language_question(user_query):
+        project = extract_project_name(user_query)
+        if project.upper() == "UNKNOWN":
+            project = user_query  # fall back to raw input as a last resort
+    else:
+        project = user_query.strip()
 
     project_data = collect_project_data(project)
 
@@ -589,6 +591,31 @@ Project:
     return ask_ai(prompt)
 
 
+def _looks_like_natural_language_question(text):
+    """
+    Cheap heuristic to decide whether extract_project_name() is
+    actually needed. A caller passing a clean name like "Avalanche"
+    doesn't need an extra AI call to figure out what they meant -
+    that extraction step only earns its latency cost for genuine
+    natural-language questions like "Is Avalanche a good hold?".
+    Skipping it when unnecessary directly reduces the sequential
+    OpenAI call count, which is the real bottleneck on the premium
+    (paid) endpoints.
+    """
+
+    text_lower = text.lower().strip()
+    question_words = ("is ", "does ", "what ", "how ", "should ", "will ", "can ", "why ", "who ", "when ")
+
+    if text_lower.endswith("?"):
+        return True
+    if any(text_lower.startswith(w) for w in question_words):
+        return True
+    if len(text.split()) > 6:
+        return True
+
+    return False
+
+
 def due_diligence_premium(user_query):
     """
     Paid tier version - uses a stronger model and adds genuinely
@@ -598,10 +625,14 @@ def due_diligence_premium(user_query):
 
     import json
 
-    project = extract_project_name(user_query)
-
-    if project.upper() == "UNKNOWN":
-        project = user_query
+    if _looks_like_natural_language_question(user_query):
+        project = extract_project_name(user_query)
+        if project.upper() == "UNKNOWN":
+            project = user_query
+    else:
+        # Skip the extraction call entirely - this is already a
+        # clean project name/symbol, not a question needing parsing.
+        project = user_query.strip()
 
     project_data = collect_project_data(project)
 
@@ -1058,5 +1089,99 @@ guarantee.
         "results": top_results,
         "narrative": narrative,
     }
+
+
+# Same heuristic as evm_portfolio.py - reused here so Solana holdings
+# also get scam-token detection, not just EVM chains.
+_STABLECOIN_SYMBOLS = {"USDT", "USDC", "USDG", "DAI", "BUSD", "USDT0", "USDE"}
+
+
+def _flag_scam_tokens(holdings):
+    for h in holdings:
+        symbol = (h.get("symbol") or "").upper()
+        price = h.get("price_usd") or 0
+
+        if symbol in _STABLECOIN_SYMBOLS and price > 0:
+            h["possible_scam_token"] = price < 0.80 or price > 1.20
+        else:
+            h.setdefault("possible_scam_token", False)
+
+    return holdings
+
+
+def portfolio_health_premium(chain_key, address):
+    """
+    Paid, deeper tier of Portfolio Doctor. Reuses the existing free
+    wallet-reading functions entirely (no duplicated data-fetching
+    logic) - the premium value is in the deeper AI analysis layered
+    on top: explicit rebalancing suggestions and comprehensive
+    scam-token cross-referencing across ALL chains, not just EVM.
+    """
+
+    from wallet_portfolio import get_wallet_portfolio
+    from evm_portfolio import get_evm_portfolio
+
+    if chain_key == "solana":
+        result = get_wallet_portfolio(address)
+        holdings = result.get("holdings", []) if isinstance(result, dict) else []
+    else:
+        result = get_evm_portfolio(chain_key, address)
+        holdings = result.get("data", {}).get("holdings", []) if result.get("success") else []
+
+    if not holdings:
+        return {
+            "success": False,
+            "message": "No holdings found for this wallet, or the wallet/chain could not be read.",
+        }
+
+    holdings = _flag_scam_tokens(holdings)
+
+    flagged = [h for h in holdings if h.get("possible_scam_token")]
+
+    holdings_summary = "\n".join(
+        f"- {h.get('name') or h.get('symbol')} ({h.get('symbol')}): "
+        f"${h.get('value_usd', 0)}, {h.get('allocation_pct', 0)}% of portfolio"
+        + (" [FLAGGED: price inconsistent with a genuine stablecoin - likely a scam token using this name]" if h.get("possible_scam_token") else "")
+        for h in holdings
+    )
+
+    prompt = f"""
+You are a premium crypto portfolio health advisor.
+
+A wallet holds the following real assets:
+
+{holdings_summary}
+
+Provide a genuinely deeper analysis than a basic summary:
+
+1. Rebalancing Suggestions - specific, actionable suggestions given
+   the current allocation (e.g. "consider reducing X given Y% concentration",
+   "Z holding has no verified pricing, treat with caution"). Base this
+   only on the real data given - never invent target percentages
+   without justifying them from what's actually shown.
+2. Scam Token Warnings - if any holdings are flagged above, explicitly
+   call them out by name, explain WHY they're suspicious (price far
+   from where a genuine stablecoin should sit), and advise verifying
+   the contract address before trusting the balance. If none are
+   flagged, say so plainly - do not invent a warning that isn't there.
+3. Concentration Risk - identify the largest position(s) and whether
+   the portfolio is dangerously concentrated.
+4. Overall Health Score - Low/Medium/High risk, with brief reasoning.
+
+Never invent numbers not shown above. Keep it concise and well
+organized with clear headers.
+"""
+
+    narrative = ask_ai_premium(prompt)
+
+    return {
+        "success": True,
+        "chain": chain_key,
+        "address": address,
+        "holdings": holdings,
+        "flagged_count": len(flagged),
+        "narrative": narrative,
+    }
+
 
 
