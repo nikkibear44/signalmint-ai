@@ -60,6 +60,9 @@ def _is_likely_fake_stablecoin(symbol, price):
     # A genuine stablecoin should be close to $1 - flag if off by more
     # than 20%, a strong signal of a scam token reusing the same name.
     return price < 0.80 or price > 1.20
+
+
+def _rpc_call(rpc_url, method, params):
     try:
         response = requests.post(
             rpc_url,
